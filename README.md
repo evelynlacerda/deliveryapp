@@ -53,7 +53,7 @@ O GitHub Actions roda os dois automaticamente (`.github/workflows/`). Detalhes e
 
 ## Deploy
 
-API e web são **dois projetos na Vercel** (Root Directory `api` e `web`), com o banco no Neon. As variáveis e os passos de cada projeto estão em [`api/README.md`](api/README.md) e [`web/README.md`](web/README.md); a API precisa de `WEB_URL` com a URL do front e o front de `VITE_API_URL` com a URL da API.
+API e web são **dois projetos na Vercel** (Root Directory `api` e `web`), com o banco no Neon. As variáveis e os passos de cada projeto estão em [`api/README.md`](api/README.md) e [`web/README.md`](web/README.md); a API precisa de `WEB_URL` com a URL do front e o front de `API_URL` com a URL da API.
 
 ## Estrutura
 

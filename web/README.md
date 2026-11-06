@@ -30,9 +30,9 @@ npm run dev                 # http://localhost:5173
 
 | Variável | Obrigatória | Descrição |
 |---|---|---|
-| `VITE_API_URL` | não | URL da API, **sem barra no final**. Padrão `http://localhost:3333`. |
+| `API_URL` | não | URL da API, **sem barra no final**. Padrão `http://localhost:3333`. |
 
-> As variáveis `VITE_*` entram **no momento do build**. Se mudar `VITE_API_URL` na Vercel, é preciso fazer um novo deploy. Nunca coloque segredos aqui: tudo que é `VITE_*` fica visível no navegador.
+> As variáveis `VITE_*` entram **no momento do build**. Se mudar `API_URL` na Vercel, é preciso fazer um novo deploy. Nunca coloque segredos aqui: tudo que é `VITE_*` fica visível no navegador.
 
 O WhatsApp do estabelecimento, a chave Pix, o favorecido e o banco **não** são variáveis: são cadastrados no painel (**Pix e contato**) e vêm da API.
 
@@ -94,7 +94,7 @@ Testam as regras do front: prévia de preço, prazo de pagamento do Pix, fluxo d
 ## Deploy (Vercel)
 
 1. Crie um projeto na Vercel apontando para este repositório com **Root Directory = `web`**. O framework (Vite) é detectado sozinho.
-2. Defina `VITE_API_URL` com a URL da API em produção (sem barra no final).
+2. Defina `API_URL` com a URL da API em produção (sem barra no final).
 3. Faça o deploy. O `vercel.json` desta pasta redireciona qualquer rota para o `index.html`; sem ele, abrir ou recarregar `/pedido/CODIGO` ou `/admin/dashboard` daria 404.
 4. Na API, confirme que `WEB_URL` é exatamente a URL deste front (senão o navegador bloqueia as chamadas por CORS).
 

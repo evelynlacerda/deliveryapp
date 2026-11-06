@@ -18,7 +18,7 @@ import type {
 } from '@/types/types'
 
 // O front nunca fala com outro serviço: tudo passa pela API.
-const BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3333').replace(/\/$/, '')
+const BASE_URL = (import.meta.env.API_URL ?? 'http://localhost:3333').replace(/\/$/, '')
 const TOKEN_KEY = 'saborDeMae:token'
 
 export class ApiError extends Error {
