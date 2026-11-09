@@ -33,9 +33,6 @@ export async function autenticar(app: FastifyInstance) {
   return { authorization: `Bearer ${res.json().token}` };
 }
 
-export const horarioFuturo = (horas = 2) =>
-  new Date(Date.now() + horas * 3600_000).toISOString();
-
 /** 
  * Cria o pedido pelo service (sem HTTP) para não gastar o rate-limit do POST /pedido.
  * */
@@ -44,6 +41,7 @@ export async function criarPedidoDireto(dados: {
   tipoEntrega: "ENTREGA" | "RETIRADA";
   formaPagamento?: "DINHEIRO" | "CARTAO" | "PIX";
   precisaTroco?: boolean;
+  trocoPara?: number;
   horarioAgendado?: Date | null;
 }) {
   const { criarPedido } = await import("../src/services/pedidos.js");
@@ -53,7 +51,8 @@ export async function criarPedidoDireto(dados: {
     nomeCliente: "Cliente de Teste",
     telefone: "11912345678",
     formaPagamento: dados.formaPagamento ?? "DINHEIRO",
-    precisaTroco: dados.precisaTroco === false,
+    precisaTroco: dados.precisaTroco ?? false,
+    trocoPara: dados.trocoPara,
     quantidade: dados.quantidade,
     tipoEntrega: dados.tipoEntrega,
     sabores: [],
