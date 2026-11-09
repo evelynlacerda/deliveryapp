@@ -35,7 +35,7 @@ describe("GET /marca (público)", () => {
     const res = await app.inject({ method: "GET", url: "/marca" });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ nome: "Sabor de Mãe", logoVersao: null, logoEscuraVersao: null, cores: null });
+    expect(res.json()).toEqual({ nome: "DeliveryApp", nomeBloqueado: false, logoVersao: null, logoEscuraVersao: null, cores: null });
   });
 
   it("GET /marca/logo sem logo cadastrada devolve 404", async () => {
@@ -50,14 +50,14 @@ describe("PUT /marca (admin)", () => {
   });
 
   it("salva nome e cores (hex em minúsculas) e a rota pública reflete", async () => {
-    const cores = { publico: { claro: { fundo: "#FFF8F0", destaque: "#D79489" }, escuro: { primaria: "#112233" } }, admin: { claro: { barraLateral: "#0A0B0C" } } };
+    const cores = { publico: { claro: { fundo: "#F6F6F6", destaque: "#D79489" }, escuro: { primaria: "#112233" } }, admin: { claro: { barraLateral: "#0A0B0C" } } };
 
     const res = await put("/marca", { nome: "  Salgados da Maria ", cores });
 
     expect(res.statusCode).toBe(200);
     expect(res.json().nome).toBe("Salgados da Maria");
     expect(res.json().cores).toEqual({
-      publico: { claro: { fundo: "#fff8f0", destaque: "#d79489" }, escuro: { primaria: "#112233" } },
+      publico: { claro: { fundo: "#f6f6f6", destaque: "#d79489" }, escuro: { primaria: "#112233" } },
       admin: { claro: { barraLateral: "#0a0b0c" } },
     });
     expect((await app.inject({ method: "GET", url: "/marca" })).json()).toEqual(res.json());

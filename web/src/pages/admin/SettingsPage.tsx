@@ -44,7 +44,6 @@ function tipoDoArquivo(arquivo: File): 'image/png' | 'image/svg+xml' | null {
   return null
 }
 
-// Uma caixa de envio de logo (modo claro ou escuro): prévia, trocar e remover.
 function LogoBox({ modo }: { modo: ModoLogo }) {
   const { marca, atualizar } = useBrand()
   const save = useSave()
@@ -54,7 +53,7 @@ function LogoBox({ modo }: { modo: ModoLogo }) {
 
   async function aoEscolherArquivo(e: ChangeEvent<HTMLInputElement>) {
     const arquivo = e.target.files?.[0]
-    e.target.value = '' // permite escolher o mesmo arquivo de novo
+    e.target.value = ''
     if (!arquivo) return
 
     const tipo = tipoDoArquivo(arquivo)
@@ -115,11 +114,12 @@ function MarcaSection() {
       <form onSubmit={salvarNome} className="stack" noValidate>
         <div className="field">
           <Label htmlFor="nome-marca">Nome da marca</Label>
-          <Input id="nome-marca" value={nome} maxLength={60} onChange={(e) => { setNome(e.target.value); nomeSave.reset() }} aria-invalid={!!erroNome} />
+          <Input id="nome-marca" value={nome} maxLength={60} disabled={marca.nomeBloqueado} onChange={(e) => { setNome(e.target.value); nomeSave.reset() }} aria-invalid={!!erroNome} />
+          {marca.nomeBloqueado && <p className="field__hint">Nome fixo nesta demonstração, por segurança.</p>}
           {erroNome && <p className="field__error">{erroNome}</p>}
         </div>
         <div className="form-actions mt-0">
-          <Button type="submit" disabled={nomeSave.saving}>{nomeSave.saving ? 'Salvando...' : 'Salvar nome'}</Button>
+          <Button type="submit" disabled={nomeSave.saving || marca.nomeBloqueado}>{nomeSave.saving ? 'Salvando...' : 'Salvar nome'}</Button>
           <FormStatus error={nomeSave.error} saved={nomeSave.saved} />
         </div>
       </form>
@@ -130,7 +130,6 @@ function MarcaSection() {
   )
 }
 
-// Miniatura que usa as mesmas variáveis do tema: mostra como as cores ficam antes de salvar.
 function PreviewTema({ escopo, modo, paleta }: { escopo: Escopo; modo: Modo; paleta: Paleta }) {
   const { marca } = useBrand()
   const estilo = variaveisCss(escopo, { ...PADRAO[modo], ...Object.fromEntries(Object.entries(paleta).filter(([, v]) => corValida(v))) } as Paleta) as CSSProperties

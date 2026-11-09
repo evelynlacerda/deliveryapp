@@ -1,4 +1,4 @@
-/* Telas de configuração do admin: sabores, preços e Pix. */
+
 
 .page-head {
   display: flex;
@@ -132,7 +132,6 @@
   gap: 0.5rem;
 }
 
-/* Zona de perigo: exclusão definitiva de um pedido. */
 .danger-zone {
   display: flex;
   flex-wrap: wrap;

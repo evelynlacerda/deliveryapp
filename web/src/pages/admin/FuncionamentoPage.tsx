@@ -24,7 +24,6 @@ function situacaoTexto(f: Funcionamento) {
   return 'Aberto'
 }
 
-// A API recebe sempre o estado completo: cada ação parte do que já está salvo e troca só o que mudou.
 function corpoDe(salvo: Funcionamento, mudanca: Partial<SalvarFuncionamentoBody>): SalvarFuncionamentoBody {
   return {
     horarioAbertura: salvo.horarioAbertura,
@@ -185,7 +184,6 @@ function EnderecoRetirada({ salvo, onSaved }: { salvo: Funcionamento; onSaved: (
 }
 
 export default function FuncionamentoPage() {
-  // Atualiza a cada minuto para o "agora" acompanhar o horário de atendimento.
   const funcionamento = useFetch(api.funcionamento, [], 60_000)
   const dados = funcionamento.data
 

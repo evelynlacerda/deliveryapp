@@ -5,22 +5,18 @@ import { api } from '@/lib/api'
 import { encontrarNovos } from '@/lib/novos-pedidos'
 import type { PedidoAdmin } from '@/types/types'
 
-const SOUND_KEY = 'saborDeMae:somNovoPedido'
+const SOUND_KEY = 'deliveryApp:somNovoPedido'
 const POLL_MS = 20_000
 const MAX_ALERTS = 5
 
 function readSoundPref() {
   try {
-    return localStorage.getItem(SOUND_KEY) !== '0' // ligado por padrão
+    return localStorage.getItem(SOUND_KEY) !== '0'
   } catch {
     return true
   }
 }
 
-/**
- * Consulta os pedidos a cada 20 s e, quando aparece um código novo, toca o som e guarda o aviso.
- * A primeira consulta só "memoriza" os pedidos que já existem (não toca nada).
- */
 export function useNewOrderAlerts() {
   const [soundOn, setSoundOn] = useState(readSoundPref)
   const [locked, setLocked] = useState(() => !isAudioReady())
@@ -48,7 +44,6 @@ export function useNewOrderAlerts() {
     if (soundOnRef.current) setLocked(!playNewOrderSound())
   }, [pedidos.data])
 
-  // O primeiro clique ou tecla na página libera o áudio (regra dos navegadores).
   useEffect(() => {
     function liberar() {
       unlockAudio()
@@ -68,11 +63,10 @@ export function useNewOrderAlerts() {
     try {
       localStorage.setItem(SOUND_KEY, next ? '1' : '0')
     } catch {
-      /* preferência vale só até recarregar */
     }
     if (next) {
       unlockAudio()
-      setLocked(!playNewOrderSound(1)) // uma batida só, para confirmar
+      setLocked(!playNewOrderSound(1))
     }
   }, [])
 

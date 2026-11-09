@@ -66,9 +66,9 @@ describe('intervaloDoPeriodo (filtros do painel)', () => {
   })
 
   it('semana vai de segunda a domingo', () => {
-    expect(intervaloDoPeriodo('semana', '2026-11-03')).toEqual({ de: '2026-11-02', ate: '2026-11-08' }) // terça
-    expect(intervaloDoPeriodo('semana', '2026-11-08')).toEqual({ de: '2026-11-02', ate: '2026-11-08' }) // domingo
-    expect(intervaloDoPeriodo('semana', '2026-11-02')).toEqual({ de: '2026-11-02', ate: '2026-11-08' }) // segunda
+    expect(intervaloDoPeriodo('semana', '2026-11-03')).toEqual({ de: '2026-11-02', ate: '2026-11-08' })
+    expect(intervaloDoPeriodo('semana', '2026-11-08')).toEqual({ de: '2026-11-02', ate: '2026-11-08' })
+    expect(intervaloDoPeriodo('semana', '2026-11-02')).toEqual({ de: '2026-11-02', ate: '2026-11-08' })
   })
 
   it('semana atravessa o fim do mês e do ano', () => {

@@ -1,4 +1,4 @@
-# API — Sabor de Mãe (delivery de mini salgados)
+# API — DeliveryApp (delivery de mini salgados)
 
 API REST do app de pedidos. O front fica em [`../web`](../web/README.md); a visão geral do projeto está no [README da raiz](../README.md).
 
@@ -43,6 +43,8 @@ Copie `.env.example` para `.env` (o `.env` nunca vai para o git).
 | `PORT` | não | Porta local (padrão `3333`). |
 | `NODE_ENV` | não | `development`, `production` ou `test`. |
 | `ADMIN_USER`, `ADMIN_PASSWORD` | só no seed | Login do admin criado/atualizado por `npm run db:seed`. |
+| `MODO_DEMO` | não | `true` (padrão) trava a chave Pix em `12345678900` (demo pública); `false` libera a edição. |
+| `CRON_SECRET` | não | Segredo (mín. 16 caracteres) que a Vercel Cron envia em `Authorization: Bearer`. Ativa `GET /cron/limpar-pedidos`, que apaga todos os pedidos (agendado em `vercel.json`, 03:00 UTC). Sem ele a rota responde 503. |
 | `DATABASE_TESTS_URL` | só nos testes | Banco **separado** usado por `npm test`. |
 
 > Neon: para migrations use a string **direta** (sem `-pooler`). Para a API rodando na Vercel (serverless) a string **com** `-pooler` é a mais indicada.

@@ -27,9 +27,9 @@ describe('gerarCss', () => {
     expect(css).toContain(":root[data-escopo='admin']:not(.dark){")
     expect(css).not.toContain(":root[data-escopo='admin'].dark")
     expect(css).toContain('--accent:#ff0000;')
-    expect(css).toContain(`--background:${PADRAO.claro.fundo};`) // não personalizado: padrão
+    expect(css).toContain(`--background:${PADRAO.claro.fundo};`)
     expect(css).toContain('--sidebar:#223344;')
-    expect(css.split('\n')[0]).not.toContain('--sidebar:') // a barra lateral só existe no admin
+    expect(css.split('\n')[0]).not.toContain('--sidebar:')
   })
 
   it('ignora valores que não sejam #rrggbb (nada de injetar CSS)', () => {

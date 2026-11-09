@@ -58,11 +58,10 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
   const { sabores, valores, tempo, taxas, pix, funcionamento } = catalogo
   const navigate = useNavigate()
 
-  // Nada vem pré-selecionado: o cliente escolhe cada opção (null = ainda não escolheu).
   const [qtdText, setQtdText] = useState('')
   const [modoSabores, setModoSabores] = useState<'misto' | 'quantidades' | 'selecao' | null>(null)
-  const [selecao, setSelecao] = useState<Record<number, number>>({}) // modo "quantidades": saborId -> unidades
-  const [escolhidos, setEscolhidos] = useState<number[]>([]) // modo "selecao": só os sabores marcados
+  const [selecao, setSelecao] = useState<Record<number, number>>({})
+  const [escolhidos, setEscolhidos] = useState<number[]>([])
   const [tipo, setTipo] = useState<TipoEntrega | null>(null)
   const [endereco, setEndereco] = useState('')
   const [pontoReferencia, setPontoReferencia] = useState('')
@@ -84,7 +83,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
   const restante = qtdOk ? qtd - somaSabores : 0
   const nSabores = modoSabores === 'quantidades' ? Object.keys(selecao).length : modoSabores === 'selecao' ? escolhidos.length : 0
 
-  // O subtotal já aparece com a quantidade; a taxa e o total só depois de escolher entrega ou retirada.
   const subtotal = useMemo(
     () => (qtdOk ? calcularPreco(qtd, 'RETIRADA', valores, taxas).subtotal : null),
     [qtd, qtdOk, valores, taxas],
@@ -97,7 +95,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
 
   const formasPagamento = (['DINHEIRO', 'CARTAO', 'PIX'] as FormaPagamento[]).filter((f) => f !== 'PIX' || pix.configurada)
 
-  // Fora do horário ou sem entrega no dia, "assim que ficar pronto" não vale: o cliente agenda.
   const horarioAtendimento = textoHorario(funcionamento)
   const foraDoHorario = funcionamento.motivoFechado === 'FORA_DO_HORARIO'
   const semEntregaHoje = !funcionamento.entregaHoje
@@ -110,12 +107,10 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
 
   function escolherTipo(novo: TipoEntrega) {
     setTipo(novo)
-    // Sem entrega hoje: quem já tinha marcado "assim que ficar pronto" precisa escolher uma data.
     if (novo === 'ENTREGA' && semEntregaHoje && quando === 'pronto') setQuando('agendar')
   }
 
   function bump(delta: number) {
-    // Campo vazio ou inválido: os botões começam pela quantidade mínima.
     if (!qtdOk) return setQtdText(String(valores.quantidadeMinima))
     setQtdText(String(Math.min(valores.quantidadeMaxima, Math.max(valores.quantidadeMinima, qtd + delta))))
   }
@@ -129,7 +124,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
     })
   }
 
-  // A quantidade de cada sabor também pode ser digitada (só números; vazio = 0).
   function setFlavorQty(id: number, text: string) {
     const n = Number(text.replace(/\D/g, ''))
     setSelecao((prev) => {
@@ -143,7 +137,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
     setEscolhidos((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   }
 
-  // "100" ou "100,50" -> número em reais (0 se inválido).
   function valorTroco() {
     const n = Number(trocoText.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, ''))
     return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : 0
@@ -192,7 +185,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
     const e = validar()
     setErros(e)
     if (Object.keys(e).length || !tipo || !pagamento) {
-      // Leva o cliente até o primeiro campo com problema (o botão fica longe dos campos).
       if (Object.keys(e).length) {
         setErroGeral('Confira os campos destacados no formulário.')
         requestAnimationFrame(() => document.querySelector('.field__error')?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
@@ -204,8 +196,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
       nomeCliente: nome.trim(),
       telefone: telefone.replace(/\D/g, ''),
       quantidade: qtd,
-      // "misto": nenhum sabor (a loja monta a variedade). "quantidades": cada sabor com suas unidades.
-      // "selecao": só os sabores marcados (a loja divide as unidades entre eles).
       sabores:
         modoSabores === 'quantidades'
           ? Object.entries(selecao).map(([id, q]) => ({ saborId: Number(id), quantidade: q }))
@@ -240,7 +230,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
   return (
     <form onSubmit={submit} noValidate className="page-columns">
       <div className="stack">
-        {/* 1. Quantidade */}
         <section className="section">
           <h2 className="section__title"><span className="section__step">1</span> Quantas unidades?</h2>
           <p className="section__hint">Mini salgados em múltiplos de {valores.passo}. Quanto maior o pedido, menor o preço por unidade.</p>
@@ -275,7 +264,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
           )}
         </section>
 
-        {/* 2. Sabores */}
         <section className="section">
           <h2 className="section__title"><span className="section__step">2</span> Sabores</h2>
           <p className="section__hint">Deixe misto, diga a quantidade de cada sabor ou só marque os sabores que você quer.</p>
@@ -370,7 +358,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
           )}
         </section>
 
-        {/* 3. Entrega ou retirada */}
         <section className="section">
           <h2 className="section__title"><span className="section__step">3</span> Entrega ou retirada</h2>
           <div className="option-grid">
@@ -445,7 +432,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
           )}
         </section>
 
-        {/* 4. Dados */}
         <section className="section">
           <h2 className="section__title"><span className="section__step">4</span> Seus dados</h2>
           <div className="stack mt-3">
@@ -462,7 +448,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
           </div>
         </section>
 
-        {/* 5. Pagamento */}
         <section className="section">
           <h2 className="section__title"><span className="section__step">5</span> Pagamento</h2>
           <div className={cn('option-grid mt-3', formasPagamento.length === 3 && 'option-grid--3')}>
@@ -521,7 +506,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
           )}
         </section>
 
-        {/* 6. Observação */}
         <section className="section">
           <h2 className="section__title"><span className="section__step">6</span> Observações <span className="field__optional">(opcional)</span></h2>
           <div className="field">
@@ -540,7 +524,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
         </section>
       </div>
 
-      {/* Resumo */}
       <aside className="summary">
         <h2 className="summary__title"><ShoppingBag className="size-5" /> Resumo do pedido</h2>
         <dl className="summary__rows">
@@ -581,7 +564,6 @@ function OrderForm({ catalogo }: { catalogo: Catalogo }) {
   )
 }
 
-// Avisos do topo da página: estabelecimento fechado, fora do horário e dia sem entrega.
 function AvisoFuncionamento({ f }: { f: Funcionamento }) {
   const horario = textoHorario(f)
 
@@ -649,7 +631,6 @@ export default function OrderPage() {
         ) : catalogo.data ? (
           <>
             <AvisoFuncionamento f={catalogo.data.funcionamento} />
-            {/* Fechado pelo admin: não há o que pedir até reabrir. */}
             {catalogo.data.funcionamento.motivoFechado !== 'FECHADO_MANUAL' && <OrderForm catalogo={catalogo.data} />}
           </>
         ) : (

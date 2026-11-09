@@ -21,15 +21,12 @@ type Detalhe = Pedido & { telefone?: string }
 
 const TEMPOS_RAPIDOS = [15, 30, 45, 60, 90]
 
-// Não existe GET de um pedido só para o admin: busca na lista (que traz o telefone).
-// Se o pedido for antigo e não estiver na lista, cai na consulta pública (sem telefone).
 async function carregarPedido(codigo: string): Promise<Detalhe> {
   const lista = await api.pedidosAdmin()
   const achado = lista.find((p) => p.codigo === codigo.toUpperCase())
   return achado ?? api.buscarPedido(codigo)
 }
 
-// Pedido sem horário agendado: o admin diz quanto tempo o preparo vai levar.
 function TempoPreparoForm({ pedido, onSaved }: { pedido: Pedido; onSaved: (p: PedidoAdmin) => void }) {
   const [minutos, setMinutos] = useState(String(pedido.tempoPreparoMin ?? 30))
   const save = useSave()
@@ -69,7 +66,6 @@ function TempoPreparoForm({ pedido, onSaved }: { pedido: Pedido; onSaved: (p: Pe
   )
 }
 
-// Exclusão definitiva do pedido, com confirmação (não dá para desfazer).
 function ExcluirPedido({ codigo }: { codigo: string }) {
   const navigate = useNavigate()
   const [confirmando, setConfirmando] = useState(false)
@@ -124,7 +120,6 @@ export default function OrderDetailPage() {
   const { marca } = useBrand()
   const { codigo = '' } = useParams()
   const pedido = useFetch(() => carregarPedido(codigo), [codigo], 30_000)
-  // Endereço atual da loja, para pedidos feitos antes de o endereço ser cadastrado.
   const funcionamento = useFetch(api.funcionamento, [])
   const { update, busy, error } = useStatusUpdate((atualizado: PedidoAdmin) => pedido.mutate(() => atualizado))
 
@@ -150,7 +145,6 @@ export default function OrderDetailPage() {
   const aguardandoPagamento = p.status === 'AGUARDANDO_PAGAMENTO'
   const mensagem = `Olá, ${p.nomeCliente.split(' ')[0]}! Aqui é do ${marca.nome}, sobre o seu pedido ${p.codigo} (${statusLabels[p.status].toLowerCase()}).`
 
-  // Aviso pronto para enviar ao cliente (abre o WhatsApp com a mensagem escrita; o admin só aperta enviar).
   const enderecoRetirada = p.enderecoRetirada ?? funcionamento.data?.enderecoRetirada ?? null
   const aviso =
     p.status === 'PRONTO_RETIRADA'

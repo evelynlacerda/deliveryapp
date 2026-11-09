@@ -22,7 +22,6 @@ export type DadosFuncionamento = {
   horarioFechamento: string | null;
   estabelecimentoFechado: boolean;
   entregaSuspensaEm: string | null;
-  // 0 = domingo ... 6 = sábado. Dia fora da lista = fechado o dia todo.
   diasAtendimento: number[];
   enderecoRetirada?: string | null;
 };
@@ -89,7 +88,6 @@ export function dentroDoHorario(config: DadosFuncionamento, data: Date): boolean
 
   if (abertura < fechamento) return dias.includes(dia) && agora >= abertura && agora < fechamento;
 
-  // Passa da meia-noite.
   if (agora >= abertura) return dias.includes(dia);
   if (agora < fechamento) return dias.includes((dia + 6) % 7);
   return false;

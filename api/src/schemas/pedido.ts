@@ -25,7 +25,6 @@ export const criarPedidoSchema = z
       .min(QUANTIDADE_MINIMA)
       .max(QUANTIDADE_MAXIMA)
       .multipleOf(PASSO_QUANTIDADE, `A quantidade deve ser múltipla de ${PASSO_QUANTIDADE}.`),
-    // Vazio = pedido misto (o cliente não escolheu sabores).
     sabores: z.array(itemSaborSchema).max(50).default([]),
     tipoEntrega: z.enum(TipoEntrega),
     endereco: z.string().trim().min(5).max(300).optional(),
@@ -43,7 +42,6 @@ export const criarPedidoSchema = z
       .max(500, "A observação deve ter no máximo 500 caracteres.")
       .transform((v) => (v === "" ? undefined : v))
       .optional(),
-    // Entrega ou retirada em data e hora específicas. Ausente = "para quando ficar pronto".
     horarioAgendado: z.iso
       .datetime({ offset: true })
       .transform((v) => new Date(v))
@@ -109,18 +107,13 @@ export const pedidoRespostaSchema = z.object({
   observacao: z.string().nullable(),
   // Retirada: onde buscar (endereço do estabelecimento na hora do pedido). null se não configurado ou se for entrega.
   enderecoRetirada: z.string().nullable(),
-  // Data e hora pedidas pelo cliente; nulo = "para quando ficar pronto".
   horarioAgendado: z.string().nullable(),
-  // Só para pedidos sem horário agendado: informado pelo admin quando aprova/inicia o pedido.
   tempoPreparoMin: z.number().nullable(),
   previsaoEm: z.string().nullable(),
   formaPagamento: z.enum(FormaPagamento),
-  // Só dinheiro: precisa de troco e para quanto. null nos demais pedidos.
   troco: z.object({ precisa: z.boolean(), para: z.string().nullable() }).nullable(),
-  // Só Pix: quando o pagamento deve ser feito. null nos demais pedidos.
   instrucaoPix: z
     .object({
-      // true = pagar no ato do pedido; o pedido só começa depois do pagamento e do comprovante.
       imediato: z.boolean(),
       horasAntecedencia: z.number().nullable(),
       pagarAte: z.string().nullable(),
@@ -131,12 +124,9 @@ export const pedidoRespostaSchema = z.object({
   taxaEntrega: z.string(),
   total: z.string(),
   criadoEm: z.string(),
-  // Pedido sem sabores escolhidos aparece como "Misto" (no banco o item fica com saborId nulo).
-  // quantidade nula = o cliente só escolheu o sabor (a loja divide as unidades).
   itens: z.array(z.object({ sabor: z.string(), quantidade: z.number().nullable() })),
 });
 
-// Visão do admin: inclui os dados de contato do cliente.
 export const pedidoAdminRespostaSchema = pedidoRespostaSchema.extend({ telefone: z.string() });
 
 // O telefone fica de fora da visão pública: quem tem o código vê o pedido, mas não o contato.

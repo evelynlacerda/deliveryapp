@@ -71,7 +71,6 @@ function OrderCard({
   )
 }
 
-// Pedidos por página: múltiplos de 12, a partir de 12.
 const TAMANHOS_PAGINA = [12, 24, 36, 48] as const
 
 const itensQuantidade = Object.fromEntries(TAMANHOS_PAGINA.map((n) => [String(n), `${n} pedidos`]))
@@ -83,7 +82,6 @@ export default function DashboardPage() {
   const [dia, setDia] = useState(todayISO())
   const [filtro, setFiltro] = useState<StatusPedido | 'todos'>('todos')
 
-  // Padrão: todos os pedidos, de todos os dias (do mais recente para o mais antigo, como a API entrega).
   const [periodo, setPeriodo] = useState<Periodo>('todos')
   const [porPagina, setPorPagina] = useState<number>(TAMANHOS_PAGINA[0])
   const [pagina, setPagina] = useState(1)
@@ -105,7 +103,6 @@ export default function DashboardPage() {
   ]
   const filtrados = lista.filter((p) => filtro === 'todos' || p.status === filtro)
   const totalPaginas = Math.max(1, Math.ceil(filtrados.length / porPagina))
-  // A lista é atualizada em segundo plano e pode encolher: nunca fica numa página que não existe mais.
   const paginaAtual = Math.min(pagina, totalPaginas)
   const visiveis = filtrados.slice((paginaAtual - 1) * porPagina, paginaAtual * porPagina)
 
@@ -144,7 +141,6 @@ export default function DashboardPage() {
                 ['todos', 'Todos os dias', 'TD'],
               ] as const
             ).map(([valor, rotulo, sigla]) => (
-              // No celular só a sigla (menos elementos e sem quebra de linha); o nome completo continua para leitores de tela.
               <button key={valor} className="chip" aria-pressed={periodo === valor} aria-label={rotulo} title={rotulo} onClick={() => { setPeriodo(valor); setPagina(1) }}>
                 <span aria-hidden="true" className="sm:hidden">{sigla}</span>
                 <span aria-hidden="true" className="hidden sm:inline">{rotulo}</span>

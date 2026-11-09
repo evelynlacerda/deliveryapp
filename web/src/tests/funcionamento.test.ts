@@ -13,7 +13,6 @@ const base: Funcionamento = {
   entregaHoje: true,
 }
 
-// Brasília é UTC-3 o ano todo.
 const em = (iso: string) => new Date(`${iso}-03:00`)
 
 describe('funcionamento (cliente)', () => {
@@ -61,13 +60,13 @@ describe('dias de atendimento (cliente)', () => {
   const segASex = { ...base, diasAtendimento: [1, 2, 3, 4, 5] }
 
   it('dia desmarcado fecha o dia todo', () => {
-    expect(dentroDoHorario(segASex, em('2026-11-03T12:00:00'))).toBe(true) // terça
-    expect(dentroDoHorario(segASex, em('2026-11-07T12:00:00'))).toBe(false) // sábado
+    expect(dentroDoHorario(segASex, em('2026-11-03T12:00:00'))).toBe(true)
+    expect(dentroDoHorario(segASex, em('2026-11-07T12:00:00'))).toBe(false)
   })
 
   it('madrugada de um atendimento noturno pertence ao dia em que começou', () => {
     const noite = { horarioAbertura: '18:00', horarioFechamento: '02:00', diasAtendimento: [5] }
-    expect(dentroDoHorario(noite, em('2026-11-07T01:00:00'))).toBe(true) // sábado 1h = turno de sexta
+    expect(dentroDoHorario(noite, em('2026-11-07T01:00:00'))).toBe(true)
     expect(dentroDoHorario(noite, em('2026-11-06T01:00:00'))).toBe(false)
   })
 

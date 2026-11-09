@@ -1,4 +1,4 @@
-/* Estrutura das páginas: cabeçalho do site, hero e shell do admin. */
+
 .site-header {
   position: sticky;
   top: 0;
@@ -42,7 +42,6 @@
   color: var(--primary-foreground);
 }
 
-/* Logo enviada no painel (substitui o ícone e o nome). */
 .brand__image {
   display: block;
   width: auto;
@@ -51,7 +50,6 @@
   object-fit: contain;
 }
 
-/* Logo clara e escura: cada uma aparece só no seu tema (o <html> recebe .dark no modo escuro). */
 .brand__variante {
   display: contents;
 }
@@ -153,7 +151,6 @@
   color: var(--muted-foreground);
 }
 
-/* ---------- Admin ---------- */
 .admin-shell {
   --sidebar-w: 240px;
   min-height: 100svh;
@@ -164,7 +161,7 @@
     transition: grid-template-columns 200ms;
   }
 
-  /* Sidebar recolhida: só os ícones. */
+  
   &[data-collapsed='true'] {
     --sidebar-w: 76px;
 
@@ -198,7 +195,6 @@
   }
 }
 
-/* Fixa na tela (acompanha a rolagem da página) e com rolagem própria se o menu crescer. */
 .admin-sidebar {
   display: none;
   flex-direction: column;
@@ -222,7 +218,7 @@
     min-width: 0;
   }
 
-  /* Com logo, ela fica centralizada no topo (a barra é escura, então usa a logo do modo escuro). */
+  
   & .brand[data-logo='true'] {
     justify-content: center;
   }
@@ -314,7 +310,6 @@
   }
 }
 
-/* Celular: menu (dropdown) antes da logo. A sidebar só aparece a partir de 64rem. */
 .admin-topbar__start {
   display: flex;
   align-items: center;
@@ -410,7 +405,6 @@
   }
 }
 
-/* ---------- Login ---------- */
 .login-screen {
   position: relative;
   display: grid;

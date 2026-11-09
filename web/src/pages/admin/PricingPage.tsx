@@ -10,7 +10,6 @@ import { api } from '@/lib/api'
 import { formatPrice, hasMaxTwoDecimals, moneyToInput, parseMoney } from '@/lib/format'
 import type { TaxasEntrega, TempoPreparo, Valores } from '@/types/types'
 
-// Valida um valor em reais. `allowZero`: a taxa de entrega pode ser R$ 0,00.
 function checkMoney(text: string, allowZero: boolean): string | null {
   const n = parseMoney(text)
   if (n === null) return 'Informe um valor.'

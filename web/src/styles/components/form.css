@@ -1,4 +1,4 @@
-/* Blocos de formulário reutilizados no pedido e no admin. */
+
 .section {
   padding: 1rem;
   border: 1px solid var(--border);
@@ -49,14 +49,10 @@
 
 .field {
   display: grid;
-  grid-template-columns: minmax(0, 1fr); /* a coluna não cresce com o conteúdo do campo */
+  grid-template-columns: minmax(0, 1fr); 
   gap: 0.375rem;
 }
 
-/*
- * Campos de data e hora: em celulares (principalmente iOS Safari e alguns Androids) o campo nativo
- * tem largura interna própria e ignora width: 100%, saindo do card. O DevTools de desktop não reproduz.
- */
 input[type='date'],
 input[type='time'],
 input[type='datetime-local'] {
@@ -207,4 +203,9 @@ input[type='datetime-local']::-webkit-date-and-time-value {
 .alert--info {
   border-color: color-mix(in srgb, var(--accent) 50%, transparent);
   background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.chip:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

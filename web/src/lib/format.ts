@@ -3,7 +3,6 @@ import type { FormaPagamento, StatusPedido, TipoEntrega } from '@/types/types'
 const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 export const formatPrice = (value: number | string) => brl.format(typeof value === 'string' ? parseFloat(value) : value)
 
-/** "Troco para R$ 100,00" ou "Não precisa de troco"; null quando o pagamento não é em dinheiro. */
 export function textoTroco(troco: { precisa: boolean; para: string | null } | null) {
   if (!troco) return null
   return troco.precisa && troco.para ? `Troco para ${formatPrice(troco.para)}` : 'Não precisa de troco'
@@ -17,12 +16,10 @@ export function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
 }
 
-// Data local no formato AAAA-MM-DD (o que a API espera em ?de= e ?ate=).
 export type Periodo = 'dia' | 'semana' | 'mes' | 'todos'
 
 const isoUTC = (d: Date) => d.toISOString().slice(0, 10)
 
-/** Intervalo [de, ate] (AAAA-MM-DD) do período que contém o dia dado. Semana de segunda a domingo. */
 export function intervaloDoPeriodo(periodo: Periodo, diaISO: string): { de?: string; ate?: string } {
   if (periodo === 'todos' || !diaISO) return {}
   const [a, m, d] = diaISO.split('-').map(Number)
@@ -41,7 +38,6 @@ export function todayISO() {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
-// Valor para <input type="datetime-local"> (horário local, sem fuso).
 export function toLocalInputValue(date: Date) {
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
@@ -69,9 +65,6 @@ export const allStatuses = Object.keys(statusLabels) as StatusPedido[]
 
 type PedidoFluxo = { tipoEntrega: TipoEntrega; formaPagamento: FormaPagamento; status: StatusPedido }
 
-// Etapas do pedido (mesmas regras da API):
-// - entrega não tem "pronto para retirada" e retirada não tem "em rota";
-// - Pix passa por "aguardando pagamento" e "pagamento aprovado" no lugar de "aguardando".
 export function statusFlow(pedido: PedidoFluxo): StatusPedido[] {
   const inicio: StatusPedido[] =
     pedido.formaPagamento === 'PIX' ? ['AGUARDANDO_PAGAMENTO', 'PAGAMENTO_APROVADO'] : ['AGUARDANDO']
@@ -81,7 +74,6 @@ export function statusFlow(pedido: PedidoFluxo): StatusPedido[] {
     pedido.tipoEntrega === 'ENTREGA' ? 'EM_ROTA_ENTREGA' : 'PRONTO_RETIRADA',
     'FINALIZADO',
   ]
-  // Pedidos antigos podem estar num status que não existe mais no fluxo (ex.: Pix em "aguardando").
   return flow.includes(pedido.status) ? flow : [pedido.status, ...flow]
 }
 
@@ -91,7 +83,6 @@ export function nextStatus(pedido: PedidoFluxo): StatusPedido | null {
   return i >= 0 && i < flow.length - 1 ? flow[i + 1] : null
 }
 
-// Pedido sem horário agendado ("para quando ficar pronto").
 export const QUANDO_PRONTO = 'Assim que ficar pronto'
 
 export const tipoLabels: Record<TipoEntrega, string> = {
@@ -105,7 +96,6 @@ export const paymentLabels: Record<FormaPagamento, string> = {
   PIX: 'Pix',
 }
 
-// Valores digitados em reais ("13,50" ou "13.5"). Retorna null se não for um número.
 export function parseMoney(text: string): number | null {
   const t = text.trim().replace(',', '.')
   if (t === '') return null
@@ -115,7 +105,6 @@ export function parseMoney(text: string): number | null {
 
 export const hasMaxTwoDecimals = (n: number) => Math.abs(n * 100 - Math.round(n * 100)) < 1e-6
 
-// "13.00" (API) -> "13,00" (campo de edição)
 export const moneyToInput = (v: string) => v.replace('.', ',')
 
 export const tipoPixLabels = {
@@ -125,6 +114,5 @@ export const tipoPixLabels = {
   ALEATORIA: 'Chave aleatória',
 } as const
 
-// Itens do pedido: "20 un." ou, quando o cliente só escolheu o sabor, "a dividir" (a loja divide as unidades).
 export const formatQtdItem = (quantidade: number | null) => (quantidade === null ? 'a dividir' : `${quantidade} un.`)
 export const temItemADividir = (itens: { quantidade: number | null }[]) => itens.some((i) => i.quantidade === null)

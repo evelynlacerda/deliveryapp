@@ -1,5 +1,7 @@
 import { Prisma } from "../generated/prisma/client.js";
+import { env } from "../lib/env.js";
 import { validarLogo, type TipoLogo } from "../lib/logo.js";
+import { NOME_DEMO } from "../lib/pix.js";
 import { prisma } from "../lib/prisma.js";
 import { coresSchema, type ModoLogo } from "../schemas/marca.js";
 import { obterConfiguracao } from "./catalogo.js";
@@ -10,7 +12,8 @@ export async function obterMarca() {
   const cores = config.cores ? coresSchema.safeParse(config.cores) : null;
 
   return {
-    nome: config.nomeMarca,
+    nome: env.MODO_DEMO ? NOME_DEMO : config.nomeMarca,
+    nomeBloqueado: env.MODO_DEMO,
     logoVersao: config.logoDados && config.logoAtualizadaEm ? config.logoAtualizadaEm.getTime() : null,
     logoEscuraVersao: config.logoEscuraDados && config.logoEscuraAtualizadaEm ? config.logoEscuraAtualizadaEm.getTime() : null,
     cores: cores?.success ? cores.data : null,
@@ -28,7 +31,7 @@ export async function obterLogo(modo: ModoLogo = "claro") {
 export async function atualizarMarca(dados: { nome: string; cores: unknown }) {
   await prisma.configuracao.update({
     where: { id: 1 },
-    data: { nomeMarca: dados.nome, cores: dados.cores === null ? Prisma.DbNull : (dados.cores as Prisma.InputJsonValue) },
+    data: { ...(!env.MODO_DEMO && { nomeMarca: dados.nome }), cores: dados.cores === null ? Prisma.DbNull : (dados.cores as Prisma.InputJsonValue) },
   });
   return obterMarca();
 }

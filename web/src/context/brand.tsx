@@ -4,10 +4,10 @@ import { api } from '@/lib/api'
 import { gerarCss } from '@/lib/tema'
 import type { Marca } from '@/types/types'
 
-const CACHE_KEY = 'saborDeMae:marca'
+const CACHE_KEY = 'deliveryApp:marca'
 const STYLE_ID = 'marca-tema'
 
-export const MARCA_PADRAO: Marca = { nome: 'Sabor de Mãe', logoVersao: null, logoEscuraVersao: null, cores: null }
+export const MARCA_PADRAO: Marca = { nome: 'DeliveryApp', logoVersao: null, logoEscuraVersao: null, cores: null }
 
 function lerCache(): Marca | null {
   try {
@@ -24,11 +24,9 @@ function gravarCache(marca: Marca) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(marca))
   } catch {
-    /* sem cache: a marca é buscada de novo na próxima visita */
   }
 }
 
-/** Injeta as cores personalizadas no documento e atualiza o título da aba. */
 export function aplicarMarca(marca: Marca) {
   let estilo = document.getElementById(STYLE_ID)
   if (!estilo) {
@@ -42,7 +40,6 @@ export function aplicarMarca(marca: Marca) {
 
 export const escopoDaRota = (pathname: string) => (pathname.startsWith('/admin') ? 'admin' : 'publico')
 
-/** Aplica a última marca conhecida antes do React montar (evita o "piscar" do tema padrão). */
 export function aplicarMarcaInicial() {
   document.documentElement.dataset.escopo = escopoDaRota(window.location.pathname)
   const cache = lerCache()
@@ -51,7 +48,6 @@ export function aplicarMarcaInicial() {
 
 interface BrandContextValue {
   marca: Marca
-  /** Usa uma marca já salva na API (ex.: depois de editar nas configurações). */
   atualizar: (marca: Marca) => void
 }
 
@@ -61,7 +57,6 @@ export function BrandProvider({ children }: { children: ReactNode }) {
   const { pathname } = useLocation()
   const [marca, setMarca] = useState<Marca>(() => lerCache() ?? MARCA_PADRAO)
 
-  // Aplicativo de pedidos e painel do admin têm paletas separadas.
   useLayoutEffect(() => {
     document.documentElement.dataset.escopo = escopoDaRota(pathname)
   }, [pathname])
@@ -78,7 +73,6 @@ export function BrandProvider({ children }: { children: ReactNode }) {
       .marca()
       .then((m) => ativo && atualizar(m))
       .catch(() => {
-        /* sem conexão: segue com a última marca conhecida */
       })
     return () => {
       ativo = false

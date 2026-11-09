@@ -1,4 +1,4 @@
-/* Painel do admin: indicadores, filtros e cards de pedido. */
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -83,7 +83,7 @@
     gap: 0.5rem;
   }
 
-  /* Celular: o campo de data encolhe para os chips caberem na mesma linha. */
+  
   & input {
     flex: 1 1 7.5rem;
     min-width: 0;
@@ -94,7 +94,6 @@
   }
 }
 
-/* Filtros de período: no celular são siglas (D, S, M, TD), então o chip fica compacto. */
 .toolbar__date .chip {
   min-width: 2rem;
   padding-inline: 0.5rem;
@@ -107,7 +106,7 @@
 
 .order-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr); /* sem isso a coluna cresce com o conteúdo e o card sai da tela */
+  grid-template-columns: minmax(0, 1fr); 
   gap: 0.75rem;
 
   @media (min-width: 48rem) {

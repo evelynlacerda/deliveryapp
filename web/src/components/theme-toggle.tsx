@@ -8,12 +8,10 @@ function initialDark() {
   try {
     const saved = localStorage.getItem(KEY)
     if (saved) return saved === 'dark'
-  } catch { /* ignorar */ }
-  // Padrão: tema claro, mesmo que o sistema esteja no escuro. Só muda se o usuário escolher.
+  } catch {  }
   return false
 }
 
-// Aplica o tema antes da primeira renderização para evitar "flash".
 export function applyInitialTheme() {
   document.documentElement.classList.toggle('dark', initialDark())
 }
@@ -25,7 +23,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     const next = !dark
     setDark(next)
     document.documentElement.classList.toggle('dark', next)
-    try { localStorage.setItem(KEY, next ? 'dark' : 'light') } catch { /* ignorar */ }
+    try { localStorage.setItem(KEY, next ? 'dark' : 'light') } catch {  }
   }
 
   return (

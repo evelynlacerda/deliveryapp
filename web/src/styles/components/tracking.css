@@ -1,4 +1,4 @@
-/* Acompanhamento do pedido (cliente) e linha do tempo de status. */
+
 .code-badge {
   display: inline-block;
   padding: 0.375rem 0.75rem;
@@ -40,7 +40,7 @@
     padding-bottom: 0;
   }
 
-  /* Linha que liga uma etapa à próxima. */
+  
   &:not(:last-child)::before {
     content: '';
     position: absolute;

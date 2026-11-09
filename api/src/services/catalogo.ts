@@ -1,6 +1,14 @@
 import type { TipoChavePix } from "../generated/prisma/enums.js";
 import { ConflitoError, NaoEncontradoError, codigoErroPrisma } from "../lib/errors.js";
-import { PIX_CHAVE_PADRAO, chaveParaCopiar } from "../lib/pix.js";
+import { env } from "../lib/env.js";
+import {
+  PIX_BANCO_DEMO,
+  PIX_CHAVE_DEMO,
+  PIX_CHAVE_PADRAO,
+  PIX_TITULAR_DEMO,
+  WHATSAPP_DEMO,
+  chaveParaCopiar,
+} from "../lib/pix.js";
 import { prisma } from "../lib/prisma.js";
 import {
   LIMITE_TABELA,
@@ -15,8 +23,6 @@ const paraDecimal = (reais: number) => emReais(Math.round(reais * 100));
 export function obterConfiguracao() {
   return prisma.configuracao.findUniqueOrThrow({ where: { id: 1 } });
 }
-
-// Leituras (usadas pelas rotas públicas e como resposta das edições do admin)
 
 export function listarSabores() {
   return prisma.sabor.findMany({
@@ -67,14 +73,18 @@ export async function obterTaxasEntrega() {
 
 export async function obterPix() {
   const config = await obterConfiguracao();
+  // Bloqueado (demo): a chave é sempre a fictícia, qualquer que seja o valor guardado no banco.
+  const tipo = env.MODO_DEMO ? ("CPF" as const) : config.tipoChavePix;
+  const chave = env.MODO_DEMO ? PIX_CHAVE_DEMO : config.chavePix;
   return {
-    tipo: config.tipoChavePix,
-    chave: config.chavePix,
-    chaveParaCopiar: chaveParaCopiar(config.tipoChavePix, config.chavePix),
-    configurada: config.chavePix !== PIX_CHAVE_PADRAO,
-    titular: config.titularPix,
-    banco: config.bancoPix,
-    whatsapp: config.whatsappEstabelecimento,
+    tipo,
+    chave,
+    chaveParaCopiar: chaveParaCopiar(tipo, chave),
+    configurada: chave !== PIX_CHAVE_PADRAO,
+    bloqueada: env.MODO_DEMO,
+    titular: env.MODO_DEMO ? PIX_TITULAR_DEMO : config.titularPix,
+    banco: env.MODO_DEMO ? PIX_BANCO_DEMO : config.bancoPix,
+    whatsapp: env.MODO_DEMO ? WHATSAPP_DEMO : config.whatsappEstabelecimento,
     antecedencia: {
       ateLimiteHoras: config.pixAntecedenciaAteLimiteHoras,
       acimaLimiteHoras: config.pixAntecedenciaAcimaLimiteHoras,
@@ -84,7 +94,6 @@ export async function obterPix() {
 }
 
 // Edições do admin
-
 export async function atualizarTempoPreparo(dados: { minimoMin: number; maximoMin: number }) {
   await prisma.configuracao.update({
     where: { id: 1 },
@@ -116,12 +125,11 @@ export async function atualizarPix(dados: {
   await prisma.configuracao.update({
     where: { id: 1 },
     data: {
-      tipoChavePix: dados.tipo,
-      chavePix: dados.chave,
-      // Campos ausentes não alteram o que já está salvo; null apaga.
-      ...(dados.titular !== undefined && { titularPix: dados.titular }),
-      ...(dados.banco !== undefined && { bancoPix: dados.banco }),
-      ...(dados.whatsapp !== undefined && { whatsappEstabelecimento: dados.whatsapp }),
+      // Demo: tipo, chave, favorecido, banco e WhatsApp não mudam; só os prazos do Pix são editáveis.
+      ...(!env.MODO_DEMO && { tipoChavePix: dados.tipo, chavePix: dados.chave }),
+      ...(!env.MODO_DEMO && dados.titular !== undefined && { titularPix: dados.titular }),
+      ...(!env.MODO_DEMO && dados.banco !== undefined && { bancoPix: dados.banco }),
+      ...(!env.MODO_DEMO && dados.whatsapp !== undefined && { whatsappEstabelecimento: dados.whatsapp }),
       ...(dados.antecedenciaAteLimiteHoras !== undefined && {
         pixAntecedenciaAteLimiteHoras: dados.antecedenciaAteLimiteHoras,
       }),

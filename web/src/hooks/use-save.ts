@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-/** Controla o estado de um botão "Salvar": enviando, erro e "salvo". */
 export function useSave() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')

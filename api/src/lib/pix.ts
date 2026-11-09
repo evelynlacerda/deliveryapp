@@ -3,6 +3,13 @@ import { TipoChavePix } from "../generated/prisma/enums.js";
 // Marcador de "chave ainda não configurada" (não é um CPF válido de propósito).
 export const PIX_CHAVE_PADRAO = "00000000000";
 
+/** Dados fixos do modo demonstração (MODO_DEMO=true): fictícios e não editáveis pelo painel. */
+export const NOME_DEMO = "DeliveryApp";
+export const PIX_CHAVE_DEMO = "12345678900";
+export const PIX_TITULAR_DEMO = "Maria Exemplo da Silva";
+export const PIX_BANCO_DEMO = "Banco Demo";
+export const WHATSAPP_DEMO = "11999990000";
+
 function cpfValido(cpf: string): boolean {
   if (!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) return false;
 

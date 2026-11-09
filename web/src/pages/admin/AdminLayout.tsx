@@ -30,7 +30,7 @@ const navItems: { to: string; label: string; icon: LucideIcon }[] = [
   { to: '/admin/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
-const COLLAPSED_KEY = 'saborDeMae:sidebarRecolhida'
+const COLLAPSED_KEY = 'deliveryApp:sidebarRecolhida'
 
 function readCollapsed() {
   try {
@@ -45,7 +45,6 @@ function pageTitle(pathname: string) {
   return navItems.find((i) => pathname.startsWith(i.to))?.label ?? 'Admin'
 }
 
-// Protege todas as rotas /admin/* (exceto /admin/login).
 export default function AdminLayout() {
   const { isAdmin, logout } = useAuth()
   const location = useLocation()
@@ -54,7 +53,6 @@ export default function AdminLayout() {
   const [menuAberto, setMenuAberto] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  // Fecha o menu do celular ao trocar de página, ao clicar fora ou com Esc.
   useEffect(() => setMenuAberto(false), [location.pathname])
   useEffect(() => {
     if (!menuAberto) return
@@ -83,7 +81,6 @@ export default function AdminLayout() {
     try {
       localStorage.setItem(COLLAPSED_KEY, next ? '1' : '0')
     } catch {
-      /* preferência vale só até recarregar */
     }
   }
 

@@ -44,7 +44,7 @@ describe("fluxo completo", () => {
       ...cliente,
       quantidade: 110,
       tipoEntrega: "ENTREGA",
-      endereco: "Rua das Flores, 123",
+      endereco: "Rua das Flores, 123, Centro",
       horarioAgendado: emHoras(30),
       formaPagamento: "PIX",
     });

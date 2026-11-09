@@ -28,10 +28,9 @@ export const ROTULOS_COR: Record<ChaveTema, { rotulo: string; dica: string }> = 
 export const CHAVES_PUBLICO: ChaveTema[] = ['fundo', 'texto', 'cartao', 'primaria', 'destaque', 'textoSecundario', 'borda']
 export const CHAVES_ADMIN: ChaveTema[] = [...CHAVES_PUBLICO, 'barraLateral']
 
-// Cores do tema padrão (as mesmas de styles/index.css).
 export const PADRAO: Record<Modo, Paleta> = {
   claro: {
-    fundo: '#fff8f0',
+    fundo: '#f6f6f6',
     texto: '#060606',
     cartao: '#ffffff',
     primaria: '#060606',
@@ -63,7 +62,6 @@ function luminancia(hex: string) {
   return 0.2126 * canal(0) + 0.7152 * canal(1) + 0.0722 * canal(2)
 }
 
-/** Cor de texto (escura ou clara) com mais contraste sobre o fundo informado. */
 export function corSobre(fundo: string): string {
   const l = luminancia(fundo)
   const contrasteComPreto = (l + 0.05) / 0.05
@@ -71,7 +69,6 @@ export function corSobre(fundo: string): string {
   return contrasteComPreto >= contrasteComBranco ? '#060606' : '#ffffff'
 }
 
-/** Mistura o padrão com as cores personalizadas (ignora valores que não sejam #rrggbb). */
 export function paletaEfetiva(modo: Modo, personalizada?: TemaCoresAdmin): Paleta {
   const resultado: Paleta = { ...PADRAO[modo] }
   for (const [chave, valor] of Object.entries(personalizada ?? {})) {
@@ -80,7 +77,6 @@ export function paletaEfetiva(modo: Modo, personalizada?: TemaCoresAdmin): Palet
   return resultado
 }
 
-/** Variáveis CSS (as mesmas do shadcn/Tailwind do projeto) derivadas das cores escolhidas. */
 export function variaveisCss(escopo: Escopo, paleta: Paleta): Record<string, string> {
   const vars: Record<string, string> = {
     '--background': paleta.fundo,
@@ -116,7 +112,6 @@ export function variaveisCss(escopo: Escopo, paleta: Paleta): Record<string, str
   return vars
 }
 
-/** CSS completo das paletas personalizadas. Paleta sem personalização não gera nada (vale o tema padrão). */
 export function gerarCss(cores: Cores | null): string {
   if (!cores) return ''
   const blocos: string[] = []
@@ -135,7 +130,6 @@ export function gerarCss(cores: Cores | null): string {
   return blocos.join('\n')
 }
 
-/** Só as cores que diferem do padrão (é isso que vai para a API). Sem diferenças = null. */
 export function coresParaSalvar(rascunho: Record<Escopo, Record<Modo, Paleta>>): Cores | null {
   const saida: Cores = {}
   for (const escopo of ['publico', 'admin'] as Escopo[]) {

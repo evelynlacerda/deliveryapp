@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { api } from '@/lib/api'
 import type { PedidoAdmin, StatusPedido } from '@/types/types'
 
-/** Muda o status de um pedido na API e devolve o pedido atualizado via `onUpdated`. */
 export function useStatusUpdate(onUpdated: (pedido: PedidoAdmin) => void) {
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState('')

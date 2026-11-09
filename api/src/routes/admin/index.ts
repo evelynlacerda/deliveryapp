@@ -5,8 +5,10 @@ import { adminMarcaRoutes } from "./marca.js";
 import { adminPedidosRoutes } from "./pedidos.js";
 import { adminSaboresRoutes } from "./sabores.js";
 
-// O hook vale para todas as rotas registradas dentro deste plugin: nenhuma rota do admin
-// fica pública por esquecimento.
+/*
+* O hook vale para todas as rotas registradas dentro deste plugin:
+* nenhuma rota do admin fica pública por esquecimento.
+*/
 export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook("onRequest", authenticate);
 

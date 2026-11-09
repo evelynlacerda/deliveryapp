@@ -1,6 +1,5 @@
-/* Funcionamento: avisos na página de pedido, chaves liga/desliga e resumo no admin. */
 
-/* Avisos de horário, fechamento e dia sem entrega (página de pedido). */
+
 .aviso {
   display: grid;
   gap: 0.25rem;
@@ -14,7 +13,6 @@
   font-weight: 600;
 }
 
-/* Opções indisponíveis (ex.: "assim que ficar pronto" fora do horário). */
 .option:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -24,8 +22,6 @@
   color: var(--foreground);
   font-weight: 600;
 }
-
-/* ---------- Admin ---------- */
 
 .funcionamento-status {
   display: grid;
@@ -78,7 +74,6 @@
   }
 }
 
-/* Chave liga/desliga (botão com role="switch"). */
 .switch {
   position: relative;
   flex-shrink: 0;

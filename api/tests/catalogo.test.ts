@@ -56,6 +56,7 @@ describe("rotas públicas do catálogo (valores padrão do banco de testes)", ()
       chave: "00000000000",
       chaveParaCopiar: "00000000000",
       configurada: false,
+      bloqueada: false,
       titular: null,
       banco: null,
       whatsapp: null,

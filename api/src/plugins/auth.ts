@@ -7,7 +7,6 @@ declare module "@fastify/jwt" {
   }
 }
 
-// Use como preHandler nas rotas do admin.
 export async function authenticate(request: FastifyRequest, reply: FastifyReply) {
   try {
     await request.jwtVerify();

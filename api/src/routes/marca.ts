@@ -16,12 +16,9 @@ export const marcaRoutes: FastifyPluginAsyncZod = async (app) => {
     return (
       reply
         .header("content-type", logo.tipo)
-        // A URL leva ?v=<versão>: cada logo nova tem outra URL, então o cache pode ser longo.
         .header("cache-control", "public, max-age=31536000, immutable")
         .header("x-content-type-options", "nosniff")
-        // Se alguém abrir o arquivo direto, nada ativo roda (vale para SVG).
         .header("content-security-policy", "default-src 'none'; style-src 'unsafe-inline'; sandbox")
-        // O front fica em outro domínio e exibe a imagem com <img>.
         .header("cross-origin-resource-policy", "cross-origin")
         .send(logo.dados)
     );

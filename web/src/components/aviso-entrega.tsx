@@ -3,7 +3,6 @@ import { MapPinCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
-// Aparece sempre que a página carrega (visita nova ou F5); fechar vale só até a próxima carga.
 export function AvisoEntrega() {
   const [aberto, setAberto] = useState(true)
 

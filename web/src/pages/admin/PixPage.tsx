@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Lock } from 'lucide-react'
 import { FormStatus } from '@/components/form-status'
 import { ErrorState, LoadingState } from '@/components/state-views'
 import { Button } from '@/components/ui/button'
@@ -20,7 +21,6 @@ const placeholders: Record<TipoChavePix, string> = {
 function PixForm({ pix, onSaved }: { pix: Pix; onSaved: (p: Pix) => void }) {
   const [whatsapp, setWhatsapp] = useState(pix.whatsapp ? formatPhone(pix.whatsapp) : '')
   const [tipo, setTipo] = useState<TipoChavePix>(pix.tipo)
-  // Enquanto não configurada, a API devolve um marcador (11 zeros): não vale preencher o campo.
   const [chave, setChave] = useState(pix.configurada ? pix.chave : '')
   const [titular, setTitular] = useState(pix.titular ?? '')
   const [banco, setBanco] = useState(pix.banco ?? '')
@@ -37,7 +37,7 @@ function PixForm({ pix, onSaved }: { pix: Pix; onSaved: (p: Pix) => void }) {
     const next: Record<string, string> = {}
     const zap = whatsapp.replace(/\D/g, '')
     if (zap && !/^\d{10,11}$/.test(zap)) next.whatsapp = 'Informe o WhatsApp com DDD.'
-    if (chave.trim() === '') next.chave = 'Informe a chave Pix.'
+    if (!pix.bloqueada && chave.trim() === '') next.chave = 'Informe a chave Pix.'
     const a = Number(horasAte)
     const b = Number(horasAcima)
     if (horasAte === '' || !Number.isInteger(a) || a < 0 || a > 168) next.horasAte = 'Use de 0 a 168 horas.'
@@ -48,8 +48,8 @@ function PixForm({ pix, onSaved }: { pix: Pix; onSaved: (p: Pix) => void }) {
     await save.run(async () =>
       onSaved(
         await api.salvarPix({
-          tipo,
-          chave: chave.trim(),
+          tipo: pix.bloqueada ? pix.tipo : tipo,
+          chave: pix.bloqueada ? pix.chave : chave.trim(),
           titular: titular.trim(),
           banco: banco.trim(),
           whatsapp: zap,
@@ -67,19 +67,29 @@ function PixForm({ pix, onSaved }: { pix: Pix; onSaved: (p: Pix) => void }) {
         <p className="section__hint">O cliente envia o comprovante do Pix para este WhatsApp.</p>
         <div className="field">
           <Label htmlFor="whatsapp">WhatsApp</Label>
-          <Input id="whatsapp" type="tel" inputMode="tel" value={whatsapp} onChange={(e) => { setWhatsapp(formatPhone(e.target.value)); touch() }} placeholder="(11) 91234-5678" aria-invalid={!!errors.whatsapp} />
-          {errors.whatsapp ? <p className="field__error">{errors.whatsapp}</p> : <p className="field__hint">Sem o número, o botão de WhatsApp não aparece para o cliente.</p>}
+          <Input id="whatsapp" type="tel" inputMode="tel" value={whatsapp} onChange={(e) => { setWhatsapp(formatPhone(e.target.value)); touch() }} placeholder="(11) 91234-5678" disabled={pix.bloqueada} aria-invalid={!!errors.whatsapp} />
+          {errors.whatsapp ? <p className="field__error">{errors.whatsapp}</p> : pix.bloqueada ? <p className="field__hint">Número fictício e fixo nesta demonstração.</p> : <p className="field__hint">Sem o número, o botão de WhatsApp não aparece para o cliente.</p>}
         </div>
       </section>
 
       <section className="section">
         <h3 className="section__title mb-3">Chave Pix</h3>
+        {pix.bloqueada && (
+          <p role="note" className="alert alert--info mb-3 flex items-start gap-2">
+            <Lock className="mt-0.5 size-4 shrink-0" />
+            <span>
+              <strong>Chave Pix, favorecido, banco e WhatsApp estão inalterados por segurança.</strong> Esta é uma versão de demonstração
+              aberta ao público: esses dados são fictícios e ficam travados para que ninguém cadastre os próprios por engano (ou de
+              propósito). Só o prazo do pagamento pode ser editado.
+            </span>
+          </p>
+        )}
         <div className="stack">
           <fieldset className="field">
             <legend className="mb-1.5 text-sm font-medium">Tipo da chave</legend>
             <div className="chip-row">
               {(Object.keys(tipoPixLabels) as TipoChavePix[]).map((t) => (
-                <button key={t} type="button" className="chip" aria-pressed={tipo === t} onClick={() => { setTipo(t); touch() }}>
+                <button key={t} type="button" className="chip" aria-pressed={tipo === t} disabled={pix.bloqueada} onClick={() => { setTipo(t); touch() }}>
                   {tipoPixLabels[t]}
                 </button>
               ))}
@@ -87,17 +97,17 @@ function PixForm({ pix, onSaved }: { pix: Pix; onSaved: (p: Pix) => void }) {
           </fieldset>
           <div className="field">
             <Label htmlFor="chave-pix">Chave</Label>
-            <Input id="chave-pix" value={chave} onChange={(e) => { setChave(e.target.value); touch() }} placeholder={placeholders[tipo]} autoComplete="off" aria-invalid={!!errors.chave} />
-            {errors.chave ? <p className="field__error">{errors.chave}</p> : <p className="field__hint">CPF e CNPJ são conferidos pelos dígitos verificadores. Telefone precisa de DDD.</p>}
+            <Input id="chave-pix" value={chave} onChange={(e) => { setChave(e.target.value); touch() }} placeholder={placeholders[tipo]} autoComplete="off" disabled={pix.bloqueada} aria-invalid={!!errors.chave} />
+            {errors.chave ? <p className="field__error">{errors.chave}</p> : pix.bloqueada ? <p className="field__hint">Chave fixa nesta demonstração.</p> : <p className="field__hint">CPF e CNPJ são conferidos pelos dígitos verificadores. Telefone precisa de DDD.</p>}
           </div>
           <div className="field-pair">
             <div className="field">
               <Label htmlFor="titular">Nome do favorecido</Label>
-              <Input id="titular" value={titular} onChange={(e) => { setTitular(e.target.value); touch() }} maxLength={80} placeholder="Quem recebe o Pix" />
+              <Input id="titular" value={titular} onChange={(e) => { setTitular(e.target.value); touch() }} maxLength={80} placeholder="Quem recebe o Pix" disabled={pix.bloqueada} />
             </div>
             <div className="field">
               <Label htmlFor="banco">Banco</Label>
-              <Input id="banco" value={banco} onChange={(e) => { setBanco(e.target.value); touch() }} maxLength={80} placeholder="Ex.: Nubank" />
+              <Input id="banco" value={banco} onChange={(e) => { setBanco(e.target.value); touch() }} maxLength={80} placeholder="Ex.: Nubank" disabled={pix.bloqueada} />
             </div>
           </div>
         </div>

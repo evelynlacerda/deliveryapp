@@ -2,8 +2,10 @@ import type { FastifyInstance } from "fastify";
 import { expect } from "vitest";
 import { ADMIN_TESTE } from "./test-env.js";
 
-// Imports dinâmicos: garantem que tests/setup.ts já apontou DATABASE_URL para o banco de testes
-// antes de a aplicação ser carregada.
+/*
+ * Imports dinâmicos: garantem que tests/setup.ts já apontou DATABASE_URL
+ * para o banco de testes antes de a aplicação ser carregada.
+ */
 
 export async function criarApp(): Promise<FastifyInstance> {
   const { buildApp } = await import("../src/buildApp.js");
@@ -31,13 +33,17 @@ export async function autenticar(app: FastifyInstance) {
   return { authorization: `Bearer ${res.json().token}` };
 }
 
-export const horarioFuturo = (horas = 2) => new Date(Date.now() + horas * 3600_000).toISOString();
+export const horarioFuturo = (horas = 2) =>
+  new Date(Date.now() + horas * 3600_000).toISOString();
 
-/** Cria o pedido pelo service (sem HTTP) para não gastar o rate-limit do POST /pedido. */
+/** 
+ * Cria o pedido pelo service (sem HTTP) para não gastar o rate-limit do POST /pedido.
+ * */
 export async function criarPedidoDireto(dados: {
   quantidade: number;
   tipoEntrega: "ENTREGA" | "RETIRADA";
   formaPagamento?: "DINHEIRO" | "CARTAO" | "PIX";
+  precisaTroco?: boolean;
   horarioAgendado?: Date | null;
 }) {
   const { criarPedido } = await import("../src/services/pedidos.js");
@@ -47,6 +53,7 @@ export async function criarPedidoDireto(dados: {
     nomeCliente: "Cliente de Teste",
     telefone: "11912345678",
     formaPagamento: dados.formaPagamento ?? "DINHEIRO",
+    precisaTroco: dados.precisaTroco === false,
     quantidade: dados.quantidade,
     tipoEntrega: dados.tipoEntrega,
     sabores: [],
@@ -60,10 +67,14 @@ export async function criarPedidoDireto(dados: {
   });
 }
 
-/** Guarda a configuração e a tabela de preços; devolve a função que as restaura. */
+/** 
+ * Guarda a configuração e a tabela de preços; devolve a função que as restaura. 
+ * */
 export async function salvarConfiguracao() {
   const prisma = await obterPrisma();
-  const { id, ...config } = await prisma.configuracao.findUniqueOrThrow({ where: { id: 1 } });
+  const { id, ...config } = await prisma.configuracao.findUniqueOrThrow({
+    where: { id: 1 },
+  });
   const faixas = await prisma.faixaPreco.findMany();
 
   const { Prisma } = await import("../src/generated/prisma/client.js");
@@ -72,10 +83,16 @@ export async function salvarConfiguracao() {
     // Coluna Json nula precisa de Prisma.DbNull para ser gravada de volta.
     await prisma.configuracao.update({
       where: { id },
-      data: { ...config, cores: config.cores === null ? Prisma.DbNull : config.cores },
+      data: {
+        ...config,
+        cores: config.cores === null ? Prisma.DbNull : config.cores,
+      },
     });
     for (const faixa of faixas) {
-      await prisma.faixaPreco.update({ where: { id: faixa.id }, data: { valor: faixa.valor } });
+      await prisma.faixaPreco.update({
+        where: { id: faixa.id },
+        data: { valor: faixa.valor },
+      });
     }
   };
 }

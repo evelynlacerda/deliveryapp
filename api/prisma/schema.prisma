@@ -1,153 +1,127 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+    provider = "prisma-client"
+    output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+    provider = "postgresql"
 }
 
 enum TipoEntrega {
-  ENTREGA
-  RETIRADA
+    ENTREGA
+    RETIRADA
 }
 
 enum FormaPagamento {
-  DINHEIRO
-  CARTAO
-  PIX
+    DINHEIRO
+    CARTAO
+    PIX
 }
 
 enum TipoChavePix {
-  CPF
-  CNPJ
-  TELEFONE
-  ALEATORIA
+    CPF
+    CNPJ
+    TELEFONE
+    ALEATORIA
 }
 
 enum StatusPedido {
-  // Pedidos pagos com Pix: AGUARDANDO_PAGAMENTO -> PAGAMENTO_APROVADO -> EM_PRODUCAO -> ...
-  AGUARDANDO_PAGAMENTO
-  PAGAMENTO_APROVADO
-  // Demais formas de pagamento: AGUARDANDO -> EM_PRODUCAO -> ...
-  AGUARDANDO
-  EM_PRODUCAO
-  EM_ROTA_ENTREGA
-  PRONTO_RETIRADA
-  FINALIZADO
+    // Quando for Pix:
+    AGUARDANDO_PAGAMENTO
+    PAGAMENTO_APROVADO
+    // Pedidos em geral:
+    AGUARDANDO
+    EM_PRODUCAO
+    EM_ROTA_ENTREGA
+    PRONTO_RETIRADA
+    FINALIZADO
 }
 
 model Sabor {
-  id    Int          @id @default(autoincrement())
-  nome  String       @unique @db.VarChar(80)
-  ativo Boolean      @default(true)
-  itens ItemPedido[]
+    id    Int          @id @default(autoincrement())
+    nome  String       @unique @db.VarChar(80)
+    ativo Boolean      @default(true)
+    itens ItemPedido[]
 }
 
 model FaixaPreco {
-  id         Int     @id @default(autoincrement())
-  quantidade Int     @unique
-  valor      Decimal @db.Decimal(10, 2)
+    id         Int     @id @default(autoincrement())
+    quantidade Int     @unique
+    valor      Decimal @db.Decimal(10, 2)
 }
 
 // Linha única (id = 1) com os parâmetros ajustáveis pelo admin.
 model Configuracao {
-  id                              Int          @id @default(1)
-  tempoPreparoMinimoMin           Int          @default(30)
-  tempoPreparoMaximoMin           Int          @default(60)
-  valorUnidadeAcimaDe100          Decimal      @default(0.64) @db.Decimal(10, 2)
-  // Taxa de entrega de até 49 unidades.
-  taxaEntregaAte49                Decimal      @default(7.00) @db.Decimal(10, 2)
-  // Taxa de entrega de 50 a 199 unidades.
-  taxaEntregaDe50a199             Decimal      @default(5.00) @db.Decimal(10, 2)
-  // Entrega grátis a partir desta quantidade (inclusive).
-  entregaGratisAPartirDe          Int          @default(200)
-  // Chave Pix mostrada ao cliente. O padrão é um marcador de "ainda não configurada".
-  tipoChavePix                    TipoChavePix @default(CPF)
-  chavePix                        String       @default("00000000000") @db.VarChar(100)
-  // Dados exibidos na tela de pagamento Pix.
-  titularPix                      String?      @db.VarChar(80)
-  bancoPix                        String?      @db.VarChar(80)
-  // WhatsApp do estabelecimento (só dígitos, DDD + número): para onde o cliente envia o comprovante.
-  whatsappEstabelecimento         String?      @db.VarChar(20)
-  // Pedido para um dia seguinte: o Pix deve ser pago com esta antecedência mínima (em horas)
-  // em relação ao horário agendado. Vale até 100 unidades; acima disso, usa o campo seguinte.
-  pixAntecedenciaAteLimiteHoras   Int          @default(2)
-  pixAntecedenciaAcimaLimiteHoras Int          @default(4)
-  // Funcionamento. Horário de atendimento diário (HH:MM, horário de Brasília); os dois nulos = sem horário
-  // definido (sem restrição). Se o fechamento for menor que a abertura, o atendimento passa da meia-noite.
-  horarioAbertura                 String?      @db.VarChar(5)
-  horarioFechamento               String?      @db.VarChar(5)
-  // Fecha o estabelecimento até o admin desativar, independente do horário.
-  estabelecimentoFechado          Boolean      @default(false)
-  // Dias da semana com atendimento (0 = domingo ... 6 = sábado, Brasília). Dia fora da lista = fechado o dia todo.
-  diasAtendimento                 Int[]        @default([0, 1, 2, 3, 4, 5, 6])
-  // Endereço mostrado ao cliente que escolhe retirada (opcional).
-  enderecoRetirada                String?      @db.VarChar(300)
-  // Dia (AAAA-MM-DD, Brasília) em que a entrega está desligada. Vale só nesse dia: no dia seguinte volta sozinha.
-  entregaSuspensaEm               String?      @db.VarChar(10)
-  // Marca e aparência (editáveis no painel). A logo fica no próprio banco (limite de 300 KB).
-  nomeMarca                       String       @default("Sabor de Mãe") @db.VarChar(60)
-  logoDados                       Bytes?
-  logoTipo                        String?      @db.VarChar(30)
-  logoAtualizadaEm                DateTime?
-  // Versão da logo para o modo escuro (opcional; sem ela, o modo escuro usa a logo normal).
-  logoEscuraDados                 Bytes?
-  logoEscuraTipo                  String?      @db.VarChar(30)
-  logoEscuraAtualizadaEm          DateTime?
-  // Cores personalizadas: { publico|admin: { claro|escuro: { fundo, texto, ... } } }. Nulo = tema padrão.
-  cores                           Json?
+    id                              Int          @id @default(1)
+    tempoPreparoMinimoMin           Int          @default(30)
+    tempoPreparoMaximoMin           Int          @default(60)
+    valorUnidadeAcimaDe100          Decimal      @default(0.64) @db.Decimal(10, 2)
+    taxaEntregaAte49                Decimal      @default(7.00) @db.Decimal(10, 2)
+    taxaEntregaDe50a199             Decimal      @default(5.00) @db.Decimal(10, 2)
+    entregaGratisAPartirDe          Int          @default(200)
+    tipoChavePix                    TipoChavePix @default(CPF)
+    chavePix                        String       @default("00000000000") @db.VarChar(100)
+    titularPix                      String?      @db.VarChar(80)
+    bancoPix                        String?      @db.VarChar(80)
+    whatsappEstabelecimento         String?      @db.VarChar(20)
+    pixAntecedenciaAteLimiteHoras   Int          @default(2)
+    pixAntecedenciaAcimaLimiteHoras Int          @default(4)
+    horarioAbertura                 String?      @db.VarChar(5)
+    horarioFechamento               String?      @db.VarChar(5)
+    estabelecimentoFechado          Boolean      @default(false)
+    diasAtendimento                 Int[]        @default([0, 1, 2, 3, 4, 5, 6])
+    enderecoRetirada                String?      @db.VarChar(300)
+    entregaSuspensaEm               String?      @db.VarChar(10)
+    nomeMarca                       String       @default("DeliveryApp") @db.VarChar(60)
+    logoDados                       Bytes?
+    logoTipo                        String?      @db.VarChar(30)
+    logoAtualizadaEm                DateTime?
+    logoEscuraDados                 Bytes?
+    logoEscuraTipo                  String?      @db.VarChar(30)
+    logoEscuraAtualizadaEm          DateTime?
+    cores                           Json?
 }
 
 model Pedido {
-  id                   String         @id @default(uuid()) @db.Uuid
-  codigo               String         @unique @db.VarChar(12)
-  nomeCliente          String         @db.VarChar(120)
-  telefone             String         @db.VarChar(20)
-  tipoEntrega          TipoEntrega
-  endereco             String?        @db.VarChar(300)
-  // Opcional, só em entregas: "perto da padaria", "portão azul"...
-  pontoReferencia      String?        @db.VarChar(200)
-  // Recado opcional do cliente para a loja (qualquer tipo de pedido).
-  observacao           String?        @db.VarChar(500)
-  // Data e hora pedidas pelo cliente (entrega ou retirada). Nulo = "para quando ficar pronto".
-  horarioAgendado      DateTime?
-  formaPagamento       FormaPagamento
-  // Retirada: endereço do estabelecimento no momento do pedido (se estava configurado).
-  enderecoRetirada     String?        @db.VarChar(300)
-  // Só pagamento em dinheiro: o cliente precisa de troco? E para quanto (nota que ele vai entregar).
-  precisaTroco         Boolean        @default(false)
-  trocoPara            Decimal?       @db.Decimal(10, 2)
-  status               StatusPedido   @default(AGUARDANDO)
-  quantidadeTotal      Int
-  subtotal             Decimal        @db.Decimal(10, 2)
-  taxaEntrega          Decimal        @db.Decimal(10, 2)
-  total                Decimal        @db.Decimal(10, 2)
-  // Só para pedidos sem horário agendado: tempo de preparo informado pelo admin e a previsão resultante.
-  tempoPreparoMin      Int?
-  previsaoEm           DateTime?
-  // Só Pix: antecedência exigida (h) e limite para pagar. Ambos nulos = pagar no ato do pedido.
-  pixAntecedenciaHoras Int?
-  pagarAte             DateTime?
-  criadoEm             DateTime       @default(now())
-  itens                ItemPedido[]
+    id                   String         @id @default(uuid()) @db.Uuid
+    codigo               String         @unique @db.VarChar(12)
+    nomeCliente          String         @db.VarChar(120)
+    telefone             String         @db.VarChar(20)
+    tipoEntrega          TipoEntrega
+    endereco             String?        @db.VarChar(300)
+    pontoReferencia      String?        @db.VarChar(200)
+    observacao           String?        @db.VarChar(500)
+    horarioAgendado      DateTime?
+    formaPagamento       FormaPagamento
+    enderecoRetirada     String?        @db.VarChar(300)
+    precisaTroco         Boolean        @default(false)
+    trocoPara            Decimal?       @db.Decimal(10, 2)
+    status               StatusPedido   @default(AGUARDANDO)
+    quantidadeTotal      Int
+    subtotal             Decimal        @db.Decimal(10, 2)
+    taxaEntrega          Decimal        @db.Decimal(10, 2)
+    total                Decimal        @db.Decimal(10, 2)
+    tempoPreparoMin      Int?
+    previsaoEm           DateTime?
+    pixAntecedenciaHoras Int?
+    pagarAte             DateTime?
+    criadoEm             DateTime       @default(now())
+    itens                ItemPedido[]
 
-  @@index([status, criadoEm])
+    @@index([status, criadoEm])
 }
 
 model ItemPedido {
-  id         Int    @id @default(autoincrement())
-  pedidoId   String @db.Uuid
-  pedido     Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
-  // Nulo quando o cliente pediu a quantidade mista.
-  saborId    Int?
-  sabor      Sabor? @relation(fields: [saborId], references: [id], onDelete: Restrict)
-  // Nulo quando o cliente só escolheu os sabores, sem dizer quantas unidades de cada (a loja divide).
-  quantidade Int?
+    id         Int    @id @default(autoincrement())
+    pedidoId   String @db.Uuid
+    pedido     Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+    saborId    Int?
+    sabor      Sabor? @relation(fields: [saborId], references: [id], onDelete: Restrict)
+    quantidade Int?
 }
 
 model AdminUser {
-  id        Int    @id @default(autoincrement())
-  usuario   String @unique @db.VarChar(60)
-  senhaHash String
+    id        Int    @id @default(autoincrement())
+    usuario   String @unique @db.VarChar(60)
+    senhaHash String
 }

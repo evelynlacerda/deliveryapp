@@ -21,7 +21,6 @@ function CopyButton({ text, label }: { text: string; label: string }) {
       setCopiado(true)
       setTimeout(() => setCopiado(false), 2500)
     } catch {
-      /* clipboard indisponível: o cliente ainda pode selecionar o texto manualmente */
     }
   }
 
@@ -86,7 +85,6 @@ export default function TrackingPage() {
   const recemCriado = (location.state as { novo?: boolean } | null)?.novo === true
 
   const pedido = useFetch(() => api.buscarPedido(codigo), [codigo], 20_000)
-  // Pedidos feitos antes de o endereço ser cadastrado não o guardam: usa o endereço atual do estabelecimento.
   const funcionamento = useFetch(api.funcionamento, [])
   const extras = useFetch(async () => ({ pix: await api.pix(), tempo: await api.tempoPreparo() }), [])
 

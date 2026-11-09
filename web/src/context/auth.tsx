@@ -17,7 +17,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTokenState(null)
   }, [])
 
-  // Token expirado ou inválido em qualquer chamada de admin: volta para o login.
   useEffect(() => {
     setUnauthorizedHandler(logout)
     return () => setUnauthorizedHandler(null)

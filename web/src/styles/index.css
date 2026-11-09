@@ -3,7 +3,6 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
-/* CSS dos componentes da aplicação (um arquivo por área) */
 @import "./imports.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -51,7 +50,6 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Paleta: #060606 #565D62 #D2D6D8 #D79489 #FEE8D0 */
 :root {
     --brand-ink: #060606;
     --brand-slate: #565D62;
@@ -59,7 +57,7 @@
     --brand-rose: #D79489;
     --brand-cream: #FEE8D0;
 
-    --background: #fff8f0;
+    --background: #f6f6f6;
     --foreground: #060606;
     --card: #ffffff;
     --card-foreground: #060606;

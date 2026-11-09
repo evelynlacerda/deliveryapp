@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/button'
 import { useNewOrderAlerts } from '@/hooks/use-new-order-alerts'
 import { formatPrice } from '@/lib/format'
 
-// Botão de som no topo do painel + avisos de novos pedidos. Fica no layout do admin:
-// funciona em qualquer página do painel enquanto ele estiver aberto.
 export function NewOrderAlerts() {
   const { soundOn, alerts, toggleSound, dismiss, dismissAll } = useNewOrderAlerts()
   const label = soundOn ? 'Desligar o som de novos pedidos' : 'Ligar o som de novos pedidos'

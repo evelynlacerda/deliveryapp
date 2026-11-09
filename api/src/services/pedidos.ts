@@ -200,3 +200,9 @@ export function listarPedidos(filtros: { status?: StatusPedido; de?: string; ate
     take: 1000, // um mês de pedidos cabe com folga
   });
 }
+
+/** Apaga todos os pedidos (os itens saem junto, por cascata). Usado pela limpeza diária da demo. */
+export async function limparPedidos(): Promise<number> {
+  const { count } = await prisma.pedido.deleteMany();
+  return count;
+}

@@ -1,4 +1,4 @@
-# Web — Sabor de Mãe (delivery de mini salgados)
+# Web — DeliveryApp (delivery de mini salgados)
 
 Front do app de pedidos: a página do cliente (`/pedido`) e o painel do lojista (`/admin`). Ele só conversa com a [API](../api/README.md); visão geral do projeto no [README da raiz](../README.md).
 

@@ -1,4 +1,4 @@
-/* Página de pedido do cliente: quantidade, sabores e resumo. */
+
 .qty {
   display: flex;
   flex-wrap: wrap;
@@ -54,7 +54,6 @@
   gap: 0.5rem;
 }
 
-/* Quantidade do sabor, digitada no teclado (os botões - e + continuam funcionando). */
 .flavor__input {
   width: 4rem;
   height: 2rem;
@@ -65,7 +64,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Modo "só escolher os sabores": lista de sabores para marcar. */
 .flavor-picker {
   display: grid;
   gap: 0.5rem;

@@ -6,10 +6,6 @@ interface FetchState<T> {
   loading: boolean
 }
 
-/**
- * Busca dados ao montar e quando `deps` mudam. Com `intervalMs`, atualiza em segundo plano
- * (sem piscar o loading). `mutate` altera os dados já carregados (ex.: após uma ação).
- */
 export function useFetch<T>(fetcher: () => Promise<T>, deps: unknown[] = [], intervalMs?: number) {
   const [state, setState] = useState<FetchState<T>>({ loading: true })
   const [tick, setTick] = useState(0)

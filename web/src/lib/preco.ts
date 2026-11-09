@@ -1,7 +1,5 @@
 import type { TaxasEntrega, TipoEntrega, Valores } from '@/types/types'
 
-// Prévia do preço para o cliente. O valor oficial é sempre calculado pela API ao criar o pedido.
-
 const toCents = (v: string) => Math.round(parseFloat(v) * 100)
 
 export function quantidadeValida(qtd: number, valores: Valores) {

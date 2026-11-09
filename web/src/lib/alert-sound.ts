@@ -1,6 +1,3 @@
-// Som do alerta de novo pedido, gerado pelo próprio navegador (Web Audio API): sem arquivo de áudio.
-// Os navegadores só liberam áudio depois de um gesto do usuário (clique/tecla): `unlockAudio` é chamado
-// no primeiro gesto e `isAudioReady` diz se o som já pode tocar.
 
 type AudioContextCtor = typeof AudioContext
 
@@ -27,7 +24,6 @@ export function isAudioReady() {
 function nota(c: AudioContext, frequencia: number, inicio: number, duracao: number) {
   const osc = c.createOscillator()
   const ganho = c.createGain()
-  // Onda quadrada: tem muitos harmônicos e soa bem mais alta e 'estridente' que a senoide.
   osc.type = 'square'
   osc.frequency.value = frequencia
   ganho.gain.setValueAtTime(0.0001, inicio)
@@ -39,10 +35,6 @@ function nota(c: AudioContext, frequencia: number, inicio: number, duracao: numb
   osc.stop(inicio + duracao + 0.02)
 }
 
-/**
- * Toca um toque de campainha forte (bipes alternados, agudos) repetido `repeticoes` vezes.
- * Devolve false se o navegador ainda não liberou o áudio.
- */
 export function playNewOrderSound(repeticoes = 3): boolean {
   const c = getContext()
   if (!c) return false
@@ -50,7 +42,7 @@ export function playNewOrderSound(repeticoes = 3): boolean {
   if (c.state !== 'running') return false
 
   const BIPE = 0.14
-  const TOQUE = 8 * BIPE // 8 bipes alternando entre dois tons
+  const TOQUE = 8 * BIPE
   const PAUSA = 0.45
   let t = c.currentTime + 0.02
   for (let i = 0; i < repeticoes; i++) {

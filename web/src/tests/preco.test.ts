@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { calcularPreco, quantidadeValida } from '@/lib/preco'
 import type { TaxasEntrega, Valores } from '@/types/types'
 
-// Mesmos valores e exemplos do api/APP.md.
 const valores: Valores = {
   faixas: [
     { quantidade: 10, valor: '13.00' },

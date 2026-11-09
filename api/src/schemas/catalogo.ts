@@ -10,8 +10,6 @@ const NOME_DO_TIPO: Record<TipoChavePix, string> = {
   ALEATORIA: "chave aleatória (formato UUID)",
 };
 
-// Respostas (públicas e do admin)
-
 export const saborRespostaSchema = z.object({ id: z.number(), nome: z.string() });
 export const saborAdminRespostaSchema = saborRespostaSchema.extend({ ativo: z.boolean() });
 
@@ -34,16 +32,12 @@ export const taxasEntregaRespostaSchema = z.object({
 export const pixRespostaSchema = z.object({
   tipo: z.enum(TipoChavePix),
   chave: z.string(),
-  // O que o cliente deve copiar (telefone leva +55).
   chaveParaCopiar: z.string(),
-  // false enquanto o admin não cadastrou a chave real: o front deve esconder o Pix.
   configurada: z.boolean(),
-  // Quem recebe e em qual banco (exibidos junto da chave).
+  bloqueada: z.boolean(),
   titular: z.string().nullable(),
   banco: z.string().nullable(),
-  // WhatsApp do estabelecimento (só dígitos, DDD + número): o cliente envia o comprovante para lá.
   whatsapp: z.string().nullable(),
-  // Pedido para um dia seguinte: pagamento com esta antecedência mínima em relação ao horário agendado.
   antecedencia: z.object({
     ateLimiteHoras: z.number(),
     acimaLimiteHoras: z.number(),
@@ -52,25 +46,16 @@ export const pixRespostaSchema = z.object({
 });
 
 export const funcionamentoRespostaSchema = z.object({
-  // Horário de atendimento diário (HH:MM, Brasília). Nulos = sem horário definido.
   horarioAbertura: z.string().nullable(),
   horarioFechamento: z.string().nullable(),
-  // Dias com atendimento (0 = domingo ... 6 = sábado). Dia fora da lista = fechado o dia todo.
   diasAtendimento: z.array(z.number().int().min(0).max(6)),
-  // Endereço mostrado a quem escolhe retirada.
   enderecoRetirada: z.string().nullable(),
-  // Chave do admin: fecha o estabelecimento até ser desativada, independente do horário.
   estabelecimentoFechado: z.boolean(),
-  // Resultado agora: false se fechado manualmente ou fora do horário.
   aberto: z.boolean(),
   motivoFechado: z.enum(["FECHADO_MANUAL", "FORA_DO_HORARIO"]).nullable(),
-  // false = hoje só retirada (entrega ainda pode ser agendada para outro dia).
   entregaHoje: z.boolean(),
 });
 
-// Entradas do admin
-
-// Texto opcional: ausente = não altera; vazio = apaga.
 const textoOpcional = (max: number) =>
   z
     .string()
@@ -140,14 +125,12 @@ export const atualizarTaxasEntregaSchema = z.object({
 
 const horario = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use o formato HH:MM (ex.: 08:00).");
 
-// O admin envia sempre o estado completo. Sem horário de atendimento: os dois campos nulos.
 export const atualizarFuncionamentoSchema = z
   .object({
     horarioAbertura: horario.nullable(),
     horarioFechamento: horario.nullable(),
     estabelecimentoFechado: z.boolean(),
     entregaHoje: z.boolean(),
-    // Ausente = não altera. Ao menos um dia (para fechar tudo, use "estabelecimento fechado").
     diasAtendimento: z
       .array(z.number().int().min(0).max(6))
       .min(1, "Selecione ao menos um dia de atendimento.")

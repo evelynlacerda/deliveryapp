@@ -1,4 +1,4 @@
-/* Página de configurações do admin: logo, seletores de cor e pré-visualização do tema. */
+
 
 .logo-box {
   display: flex;
@@ -22,7 +22,7 @@
   color: var(--muted-foreground);
   font-size: 0.875rem;
 
-  /* A prévia da logo do modo escuro usa um fundo escuro, como ela será vista. */
+  
   &[data-modo='escuro'] {
     border-color: #2a2d30;
     background: #0c0d0e;
@@ -53,8 +53,6 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
-
-/* ---------- Cores ---------- */
 
 .settings-tabs {
   display: flex;
@@ -120,8 +118,6 @@
   background: var(--card);
   cursor: pointer;
 }
-
-/* ---------- Pré-visualização (usa as variáveis do tema aplicadas inline no elemento) ---------- */
 
 .tema-preview {
   display: flex;
