@@ -98,7 +98,7 @@ O GitHub Actions roda os dois automaticamente (`.github/workflows/`). Detalhes e
 
 ## Deploy
 
-API e web são **dois projetos na Vercel** (Root Directory `api` e `web`), com o banco no Neon. As variáveis e os passos de cada projeto estão em [`api/README.md`](api/README.md) e [`web/README.md`](web/README.md); a API precisa de `WEB_URL` com a URL do front e o front de `API_URL` com a URL da API. O agendamento da limpeza diária está em `api/vercel.json`.
+API e web são **dois projetos na Vercel** (Root Directory `api` e `web`), com o banco no Neon. As variáveis e os passos de cada projeto estão em [`api/README.md`](api/README.md) e [`web/README.md`](web/README.md); a API precisa de `WEB_URL` com a URL do front e o front de `VITE_API_URL` com a URL da API. O agendamento da limpeza diária está em `api/vercel.json`.
 
 Ao publicar a demo num banco que já tinha dados reais, rode uma vez `npm run db:seed:demo` na pasta `api`: ele sobrescreve configuração, contato, endereço, logo e cores com valores de exemplo e apaga os pedidos.
 

@@ -17,7 +17,7 @@ import type {
   Valores,
 } from '@/types/types'
 
-const BASE_URL = (import.meta.env.API_URL ?? 'http://localhost:3333').replace(/\/$/, '')
+const BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3333').replace(/\/$/, '')
 const TOKEN_KEY = 'deliveryApp:token'
 
 export class ApiError extends Error {
