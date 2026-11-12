@@ -2,7 +2,7 @@
 
 Projeto de portfólio: uma aplicação de delivery para uma única loja, com a página de pedidos do cliente e um painel de administração. **Tudo aqui é demonstrativo e aberto ao público**: os dados são fictícios, qualquer pessoa pode testar o painel e os pedidos são apagados todos os dias.
 
-> **Demo online:** _adicione aqui o link do front publicado_
+> **Demo online:** [deliveryapp-demo.vercel.app](https://deliveryapp-demo.vercel.app/pedido) | 
 > **Login de teste do painel:** usuário `admin123` · senha `123deliveryapp!`
 
 ## O que o app faz
