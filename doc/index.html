@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Docs</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <a class="brand" href="#/" id="brand"></a>
+      <span class="version" id="version"></span>
+      <div class="topbar-actions">
+        <input type="search" id="search" class="search" />
+        <button id="lang" class="text-btn lang-btn" aria-label="Language"></button>
+        <button id="theme" class="icon-btn" aria-label="Theme"></button>
+      </div>
+    </header>
+    <div class="layout">
+      <div class="sidebar-wrap">
+        <nav class="sidebar" id="sidebar"></nav>
+        <button class="collapse-btn" id="collapseBtn" aria-label="Collapse sidebar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      </div>
+      <main class="content" id="content"></main>
+      <aside class="toc" id="toc"></aside>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

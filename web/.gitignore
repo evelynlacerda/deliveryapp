@@ -26,3 +26,17 @@ dist-ssr
 # Variáveis locais (copie de .env.example)
 .env
 .env.local
+
+# Variáveis de ambiente (mantém o exemplo versionado)
+.env.*
+!.env.example
+
+# Testes e TypeScript
+coverage
+*.tsbuildinfo
+
+# Vercel
+.vercel
+
+# Sistema
+Thumbs.db
