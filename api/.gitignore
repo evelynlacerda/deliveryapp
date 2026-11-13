@@ -4,3 +4,26 @@ dist
 .env
 
 /src/generated/prisma
+
+# Variáveis de ambiente (mantém o exemplo versionado)
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Testes e TypeScript
+coverage
+*.tsbuildinfo
+
+# Vercel
+.vercel
+
+# Sistema e editores
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea

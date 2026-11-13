@@ -1,3 +1,21 @@
 WORKFLOW_GENERATE.md
 VERCEL.md
 BACKEND.md
+
+# Dependências
+node_modules/
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel/
+
+# Sistema e editores
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
