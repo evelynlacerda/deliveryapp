@@ -51,12 +51,13 @@ O WhatsApp do estabelecimento, a chave Pix, o favorecido e o banco **não** são
 | Rota | Quem acessa | O que é |
 |---|---|---|
 | `/` | todos | Redireciona para `/pedido`. |
-| `/pedido` | cliente | Quantidade, sabores, entrega/retirada, quando, dados e pagamento. Mostra o horário de atendimento e avisa quando estamos fechados, fora do horário ou sem entrega no dia. |
+| `/pedido` | cliente | Quantidade, sabores, bebidas (quando há à venda), entrega/retirada, quando, dados e pagamento. Mostra o horário de atendimento e avisa quando estamos fechados, fora do horário ou sem entrega no dia. |
 | `/pedido/:codigo` | cliente | Acompanhamento do pedido; no Pix mostra chave, valor e botão do WhatsApp. |
 | `/admin/login` | lojista | Login (usuário e senha da API; o token fica no `localStorage`). |
 | `/admin/dashboard` | admin | Pedidos do dia, filtros e avanço de status. |
 | `/admin/pedidos/:codigo` | admin | Detalhe, status, aprovar pagamento Pix, tempo de preparo e WhatsApp do cliente. |
 | `/admin/sabores` | admin | Criar, renomear e ativar/desativar sabores. |
+| `/admin/bebidas` | admin | Criar, editar, ativar/desativar e excluir bebidas, com preço e foto, e ligar/desligar a venda de bebidas. |
 | `/admin/precos` | admin | Tabela de preços, taxas de entrega e tempo de preparo. |
 | `/admin/funcionamento` | admin | Horário de atendimento, "Estabelecimento fechado" e liga/desliga da entrega de hoje. |
 | `/admin/configuracoes` | admin | Nome da marca, logos (PNG/SVG, uma para o modo claro e outra para o escuro) e cores (aplicativo de pedidos e painel, claro e escuro). |

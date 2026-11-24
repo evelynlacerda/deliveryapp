@@ -1,7 +1,15 @@
 import { z } from "zod";
 import { FormaPagamento, StatusPedido, TipoEntrega } from "../generated/prisma/enums.js";
 import type { PedidoComItens } from "../services/pedidos.js";
-import { PASSO_QUANTIDADE, QUANTIDADE_MAXIMA, QUANTIDADE_MINIMA } from "../services/preco.js";
+import { PASSO_QUANTIDADE, paraCentavos, QUANTIDADE_MAXIMA, QUANTIDADE_MINIMA } from "../services/preco.js";
+
+const CELULAR = /^[1-9][1-9]9\d{8}$/;
+
+/** Só dígitos; remove o DDI 55 quando o número veio completo (55 + DDD + 9 dígitos). */
+export function normalizarTelefone(valor: string) {
+  const digitos = valor.replace(/\D/g, "");
+  return digitos.length === 13 && digitos.startsWith("55") ? digitos.slice(2) : digitos;
+}
 
 export const SABOR_MISTO = "Misto";
 
@@ -12,13 +20,29 @@ const itemSaborSchema = z.object({
   quantidade: z.number().int().positive().optional(),
 });
 
+const itemBebidaSchema = z.object({
+  bebidaId: z.number().int().positive(),
+  quantidade: z.number().int().min(1).max(50, "Máximo de 50 unidades por bebida."),
+});
+
+// Texto aparado; vazio vira undefined. O limite de tamanho tem mensagem própria.
+function textoOpcional(max: number) {
+  return z
+    .string()
+    .trim()
+    .max(max, `Use no máximo ${max} caracteres.`)
+    .transform((v) => (v === "" ? undefined : v))
+    .optional();
+}
+
 export const criarPedidoSchema = z
   .object({
     nomeCliente: z.string().trim().min(2, "Informe seu nome.").max(120),
+    // Celular brasileiro: DDD + 9 + 8 dígitos. O DDI (55) colado junto é removido.
     telefone: z
       .string()
-      .transform((v) => v.replace(/\D/g, ""))
-      .pipe(z.string().regex(/^\d{10,11}$/, "Informe um telefone com DDD.")),
+      .transform(normalizarTelefone)
+      .pipe(z.string().regex(CELULAR, "Informe um celular com DDD + 9 (ex.: (44) 91234-5678). Não inclua o +55 do Brasil.")),
     quantidade: z
       .number()
       .int()
@@ -27,7 +51,10 @@ export const criarPedidoSchema = z
       .multipleOf(PASSO_QUANTIDADE, `A quantidade deve ser múltipla de ${PASSO_QUANTIDADE}.`),
     sabores: z.array(itemSaborSchema).max(50).default([]),
     tipoEntrega: z.enum(TipoEntrega),
-    endereco: z.string().trim().min(5).max(300).optional(),
+    // Entrega: rua/avenida, número e bairro são obrigatórios (validados no superRefine). Vazio = não informado.
+    endereco: textoOpcional(300),
+    numero: textoOpcional(20),
+    bairro: textoOpcional(100),
     // Opcional (só vale na entrega). Texto vazio é tratado como "não informado".
     pontoReferencia: z
       .string()
@@ -46,6 +73,9 @@ export const criarPedidoSchema = z
       .datetime({ offset: true })
       .transform((v) => new Date(v))
       .optional(),
+    // Bebidas escolhidas (ids de GET /bebidas, cada uma com a quantidade). [] = não quer bebida.
+    // Obrigatório enquanto houver bebidas à venda (a API confere); sem bebidas à venda, pode ser omitido.
+    bebidas: z.array(itemBebidaSchema).max(30).optional(),
     formaPagamento: z.enum(FormaPagamento),
     // Só vale com pagamento em dinheiro. trocoPara = valor da nota (em reais), ex.: 100.
     precisaTroco: z.boolean().default(false),
@@ -56,8 +86,16 @@ export const criarPedidoSchema = z
       ctx.addIssue({ code: "custom", path: ["trocoPara"], message: "Informe para quanto você precisa de troco." });
     }
 
-    if (pedido.tipoEntrega === TipoEntrega.ENTREGA && !pedido.endereco) {
-      ctx.addIssue({ code: "custom", path: ["endereco"], message: "Informe o endereço de entrega." });
+    if (pedido.tipoEntrega === TipoEntrega.ENTREGA) {
+      if (!pedido.endereco || pedido.endereco.length < 5) {
+        ctx.addIssue({ code: "custom", path: ["endereco"], message: "Informe o endereço de entrega." });
+      }
+      if (!pedido.numero) {
+        ctx.addIssue({ code: "custom", path: ["numero"], message: "Informe o número da residência." });
+      }
+      if (!pedido.bairro) {
+        ctx.addIssue({ code: "custom", path: ["bairro"], message: "Informe o bairro." });
+      }
     }
 
     if (pedido.horarioAgendado && pedido.horarioAgendado.getTime() <= Date.now()) {
@@ -66,6 +104,13 @@ export const criarPedidoSchema = z
         path: ["horarioAgendado"],
         message: "O horário escolhido deve ser no futuro.",
       });
+    }
+
+    if (pedido.bebidas) {
+      const ids = pedido.bebidas.map((b) => b.bebidaId);
+      if (new Set(ids).size !== ids.length) {
+        ctx.addIssue({ code: "custom", path: ["bebidas"], message: "Bebida repetida no pedido." });
+      }
     }
 
     if (pedido.sabores.length > 0) {
@@ -103,6 +148,8 @@ export const pedidoRespostaSchema = z.object({
   nomeCliente: z.string(),
   tipoEntrega: z.enum(TipoEntrega),
   endereco: z.string().nullable(),
+  numero: z.string().nullable(),
+  bairro: z.string().nullable(),
   pontoReferencia: z.string().nullable(),
   observacao: z.string().nullable(),
   // Retirada: onde buscar (endereço do estabelecimento na hora do pedido). null se não configurado ou se for entrega.
@@ -123,6 +170,13 @@ export const pedidoRespostaSchema = z.object({
   subtotal: z.string(),
   taxaEntrega: z.string(),
   total: z.string(),
+  // Bebidas pedidas (o valor já está no total). Vazio = sem bebida.
+  // valorUnitario * quantidade = valor.
+  bebidas: z.array(
+    z.object({ nome: z.string(), quantidade: z.number(), valorUnitario: z.string(), valor: z.string() }),
+  ),
+  // Soma das bebidas (já incluída no total).
+  totalBebidas: z.string(),
   criadoEm: z.string(),
   itens: z.array(z.object({ sabor: z.string(), quantidade: z.number().nullable() })),
 });
@@ -137,6 +191,8 @@ export function paraResposta(p: PedidoComItens): z.infer<typeof pedidoRespostaSc
     nomeCliente: p.nomeCliente,
     tipoEntrega: p.tipoEntrega,
     endereco: p.endereco,
+    numero: p.numero,
+    bairro: p.bairro,
     pontoReferencia: p.pontoReferencia,
     observacao: p.observacao,
     enderecoRetirada: p.enderecoRetirada,
@@ -160,6 +216,13 @@ export function paraResposta(p: PedidoComItens): z.infer<typeof pedidoRespostaSc
     subtotal: p.subtotal.toFixed(2),
     taxaEntrega: p.taxaEntrega.toFixed(2),
     total: p.total.toFixed(2),
+    bebidas: p.bebidas.map((b) => ({
+      nome: b.nome,
+      quantidade: b.quantidade,
+      valorUnitario: b.valorUnitario.toFixed(2),
+      valor: (paraCentavos(b.valorUnitario) * b.quantidade / 100).toFixed(2),
+    })),
+    totalBebidas: (p.bebidas.reduce((soma, b) => soma + paraCentavos(b.valorUnitario) * b.quantidade, 0) / 100).toFixed(2),
     criadoEm: p.criadoEm.toISOString(),
     itens: p.itens.map((i) => ({ sabor: i.sabor?.nome ?? SABOR_MISTO, quantidade: i.quantidade })),
   };

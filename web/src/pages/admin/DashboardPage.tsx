@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useStatusUpdate } from '@/hooks/use-status-update'
 import { useFetch } from '@/hooks/use-fetch'
 import { api } from '@/lib/api'
-import { allStatuses, formatDateTime, formatPhone, formatPrice, formatTime, intervaloDoPeriodo, nextStatus, paymentLabels, QUANDO_PRONTO, statusLabels, tipoLabels, todayISO, type Periodo } from '@/lib/format'
+import { allStatuses, formatDateTime, formatPhone, formatPrice, formatTime, intervaloDoPeriodo, nextStatus, paymentLabels, QUANDO_PRONTO, statusLabels, textoEndereco, tipoLabels, todayISO, type Periodo } from '@/lib/format'
 import type { PedidoAdmin, StatusPedido } from '@/types/types'
 
 function OrderCard({
@@ -42,7 +42,7 @@ function OrderCard({
           ))}
         </ul>
         <div className="order-card__info">
-          {pedido.tipoEntrega === 'ENTREGA' ? <p><MapPin /> {pedido.endereco}{pedido.pontoReferencia ? ` · Ref.: ${pedido.pontoReferencia}` : ''}</p> : <p><Store /> Retirada no local{pedido.enderecoRetirada ? ` · ${pedido.enderecoRetirada}` : ''}</p>}
+          {pedido.tipoEntrega === 'ENTREGA' ? <p><MapPin /> {textoEndereco(pedido)}{pedido.pontoReferencia ? ` · Ref.: ${pedido.pontoReferencia}` : ''}</p> : <p><Store /> Retirada no local{pedido.enderecoRetirada ? ` · ${pedido.enderecoRetirada}` : ''}</p>}
           <p>
             <Clock />
             {pedido.horarioAgendado

@@ -3,6 +3,7 @@ import { AuthProvider } from '@/context/auth'
 import { BrandProvider } from '@/context/brand'
 import AdminLayout from '@/pages/admin/AdminLayout'
 import DashboardPage from '@/pages/admin/DashboardPage'
+import DrinksPage from '@/pages/admin/DrinksPage'
 import FlavorsPage from '@/pages/admin/FlavorsPage'
 import FuncionamentoPage from '@/pages/admin/FuncionamentoPage'
 import LoginPage from '@/pages/admin/LoginPage'
@@ -30,6 +31,7 @@ export default function App() {
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="pedidos/:codigo" element={<OrderDetailPage />} />
               <Route path="sabores" element={<FlavorsPage />} />
+              <Route path="bebidas" element={<DrinksPage />} />
               <Route path="precos" element={<PricingPage />} />
               <Route path="funcionamento" element={<FuncionamentoPage />} />
               <Route path="pix" element={<PixPage />} />

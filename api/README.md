@@ -4,6 +4,7 @@ API REST do app de pedidos. O front fica em [`../web`](../web/README.md); a vis�
 
 - **Stack:** Node.js 24, Fastify 5, TypeScript, Prisma 7 (PostgreSQL / Neon), Zod, JWT, Vitest.
 - **Regras de negócio** (preços, quantidades, entrega, Pix, status): [`APP.md`](APP.md).
+- Bebidas: com a venda ligada e ao menos uma bebida ativa, o `POST /pedido` exige o campo `bebidas` (lista de `{ bebidaId, quantidade }`; `[]` = "não quero bebida"). O valor entra no total, calculado no servidor.
 - O preço é sempre calculado no servidor; nada que o cliente envia sobre valores é usado.
 
 ## Requisitos
@@ -119,18 +120,21 @@ Observações de produção:
 | Método | Rota | Acesso |
 |---|---|---|
 | GET | `/health` | público |
-| GET | `/sabores`, `/valores`, `/tempo-preparo`, `/taxa-entrega`, `/pix`, `/funcionamento`, `/marca` | público |
+| GET | `/sabores`, `/bebidas`, `/valores`, `/tempo-preparo`, `/taxa-entrega`, `/pix`, `/funcionamento`, `/marca` | público |
 | GET | `/marca/logo` (imagem PNG/SVG da logo; `?modo=escuro` para a do modo escuro; 404 se não houver) | público |
+| GET | `/bebidas/:id/foto` (foto da bebida; `?v=` é a versão, 404 se não houver) | público |
 | POST | `/pedido` (limite: 10/min) | público |
 | GET | `/pedido/:codigo` | público |
 | POST | `/auth/login` (limite: 5/min) | público |
-| GET | `/pedidos`, `/admin/sabores` | admin |
+| GET | `/pedidos`, `/admin/sabores`, `/admin/bebidas` (todas, com `vendaAtiva`) | admin |
 | PUT | `/pedido/:codigo/status`, `/pedido/:codigo/tempo-preparo` | admin |
 | PUT | `/tempo-preparo`, `/taxa-entrega`, `/pix`, `/valores`, `/funcionamento` | admin |
 | PUT | `/marca` (nome e cores), `/marca/logo` (logo em base64; `modo`: `claro` ou `escuro`) | admin |
 | DELETE | `/pedido/:codigo` (exclusão definitiva), `/marca/logo` (`?modo=escuro` remove só a logo do modo escuro) | admin |
-| POST | `/sabores` | admin |
-| PATCH | `/sabores/:id` | admin |
+| POST | `/sabores`, `/bebidas` | admin |
+| PATCH | `/sabores/:id`, `/bebidas/:id` | admin |
+| PUT | `/bebidas/venda` (liga/desliga a venda de bebidas), `/bebidas/:id/foto` (foto em base64, até 1 MB) | admin |
+| DELETE | `/bebidas/:id`, `/bebidas/:id/foto` | admin |
 
 Rotas de admin exigem `Authorization: Bearer <token>` (token do `POST /auth/login`, válido por 12 h). Erros de validação voltam como `400` com `{ "mensagem": "Dados inválidos.", "erros": [{ "campo", "mensagem" }] }`.
 
@@ -188,7 +192,9 @@ Body base:
   "telefone": "(11) 91234-5678",
   "quantidade": 50,
   "tipoEntrega": "ENTREGA",
-  "endereco": "Rua das Flores, 123",
+  "endereco": "Rua das Flores",
+  "numero": "123",
+  "bairro": "Centro",
   "formaPagamento": "PIX"
 }
 ```
@@ -197,7 +203,7 @@ Body base:
 |---|---|---|---|
 | 7 | Pedido misto, entrega | body base | 201, `status: AGUARDANDO_PAGAMENTO` (Pix; nas demais formas, `AGUARDANDO`), `subtotal 39.00`, `taxaEntrega 5.00`, `total 44.00`, `itens: [{ sabor: "Misto", quantidade: 50 }]`, `codigo` com 8 caracteres |
 | 8 | Com sabores | `"sabores": [{"saborId":1,"quantidade":20},{"saborId":4,"quantidade":30}]` | 201, dois itens com o nome do sabor |
-| 9 | Retirada | `"tipoEntrega":"RETIRADA"`, remover `endereco`, `"horarioAgendado":"<data futura ISO, ex.: 2026-12-01T15:00:00-03:00>"`, `quantidade: 10` | 201, `total 13.00`, `taxaEntrega 0.00` |
+| 9 | Retirada | `"tipoEntrega":"RETIRADA"`, remover `endereco`, `numero` e `bairro`, `"horarioAgendado":"<data futura ISO, ex.: 2026-12-01T15:00:00-03:00>"`, `quantidade: 10` | 201, `total 13.00`, `taxaEntrega 0.00` |
 | 10 | Entrega até 49 un. | `quantidade: 10` | `subtotal 13.00` + `taxa 7.00` = `20.00` |
 | 11 | Acima de 100 un. | retirada, `quantidade: 110` | `total 70.40` (110 × 0,64) |
 | 12 | Faixa 50–199 | entrega, `quantidade: 190` | `total 126.60` (121,60 + 5,00) |
@@ -205,7 +211,7 @@ Body base:
 | 14 | Limite máximo | retirada, `quantidade: 1000` | 201 |
 | 15 | Preço enviado pelo cliente é ignorado | adicionar `"total": 1` | 201 com total calculado pelo servidor |
 | 16 | Formas de pagamento | trocar por `DINHEIRO` e `CARTAO` | 201 nos dois |
-| 17 | Telefone sem máscara | `"telefone":"11912345678"` | 201 (só dígitos são guardados) |
+| 17 | Telefone sem máscara | `"telefone":"11912345678"` | 201 (só dígitos são guardados; celular com DDD e 9 na frente) |
 
 #### 4.3 Criar pedido — validações (todas devem dar 400)
 
@@ -215,8 +221,13 @@ Body base:
 | 19 | Quantidade abaixo do mínimo | `quantidade: 0` |
 | 20 | Quantidade acima do máximo | `quantidade: 1010` |
 | 21 | Quantidade decimal | `quantidade: 10.5` |
-| 22 | Entrega sem endereço | remover `endereco` |
+| 22 | Entrega sem endereço | remover `endereco` (erro no campo `endereco`: "Informe o endereço de entrega.") |
 | 23 | Endereço curto | `endereco: "Rua"` |
+| 23a | Entrega sem número | remover `numero` ou `numero: "  "` (erro no campo `numero`: "Informe o número da residência.") |
+| 23b | Entrega sem bairro | remover `bairro` ou `bairro: ""` (erro no campo `bairro`: "Informe o bairro.") |
+| 23c | Entrega sem número e sem bairro | os dois em branco: 400 com os dois erros listados |
+| 23d | Número ou bairro longos demais | `numero` com 21 caracteres ou `bairro` com 101 |
+| 23e | Retirada com endereço, número e bairro | 201, mas os três voltam `null` (só valem na entrega) |
 | 24 | Retirada ou entrega sem horário | omitir `horarioAgendado` | 201 (vale "para quando ficar pronto": `horarioAgendado: null`) |
 | 25 | Retirada com horário no passado | `horarioAgendado: "2020-01-01T10:00:00-03:00"` |
 | 26 | Horário sem fuso | `horarioAgendado: "2026-12-01T15:00:00"` |
@@ -225,7 +236,8 @@ Body base:
 | 29 | Sabor inexistente | `saborId: 9999` (mensagem de sabor indisponível) |
 | 30 | Sabor desativado | desative um sabor (teste 4.8) e use o id dele |
 | 31 | Nome muito curto / ausente | `nomeCliente: "A"` ou remover |
-| 32 | Telefone inválido | `"telefone":"123"` |
+| 32 | Telefone inválido | `"telefone":"123"`, fixo (`"(44) 3123-4567"`) ou sem o 9 (erro: "Informe um celular com DDD e o 9 na frente…") |
+| 32a | Telefone com DDI | `"+55 44 99123-4567"` | 201, guardado como `44991234567` (o 55 é removido) |
 | 33 | Forma de pagamento inválida | `"formaPagamento":"BOLETO"` |
 | 34 | Tipo de entrega inválido | `"tipoEntrega":"DRONE"` |
 | 35 | Body vazio / JSON malformado | `{}` e `{ quebrado` |

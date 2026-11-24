@@ -1,48 +1,57 @@
-# DeliveryApp — demo de app de pedidos de mini salgados
+# DeliveryApp — demo ordering app for a mini savory snacks shop
 
-Projeto de portfólio: uma aplicação de delivery para uma única loja, com a página de pedidos do cliente e um painel de administração. **Tudo aqui é demonstrativo e aberto ao público**: os dados são fictícios, qualquer pessoa pode testar o painel e os pedidos são apagados todos os dias.
+🇺🇸 English · 🇧🇷 [Leia em português](README.pt-BR.md)
 
-> **Demo online:** [deliveryapp-demo.vercel.app](https://deliveryapp-demo.vercel.app/pedido) | 
-> **Login de teste do painel:** usuário `admin123` · senha `123deliveryapp!`
+A portfolio project: a delivery app for a single store, with a customer ordering page and an admin panel. **Everything here is a demo and open to the public**: the data is fictional, anyone can try the panel, and all orders are deleted every day.
 
-## O que o app faz
+> **Live demo:** [deliveryapp-demo.vercel.app](https://deliveryapp-demo.vercel.app/pedido) |
+> **Documentation:** [deliveryapp-doc.vercel.app](https://deliveryapp-doc.vercel.app) |
+> **Panel test login:** user `admin123` · password `123deliveryapp!`
 
-- **Cliente** (`/pedido`): monta o pedido por quantidade e sabores, escolhe entrega ou retirada (com horário agendado, se quiser), paga em dinheiro, cartão (presencial) ou Pix, e acompanha o andamento do pedido.
-- **Lojista** (`/admin`): vê os pedidos em tempo real (com aviso sonoro), filtra e muda o status, e configura sabores, preços, taxas de entrega, horário de funcionamento, Pix, nome, logo e cores.
-- Tema claro e escuro, interface em português do Brasil, funciona em computador, tablet e celular.
-- O preço é sempre calculado no servidor; o front nunca é a fonte da verdade.
+The app interface is in Brazilian Portuguese. The READMEs inside `api/`, `web/` and `doc/` are also in Portuguese.
 
-## Como testar a demo
+## What the app does
 
-1. Abra a página de pedidos e faça um pedido de teste (use dados inventados).
-2. Entre no painel em `/admin/login` com o login de teste acima e acompanhe o pedido.
-3. Explore as configurações. Alguns dados são **fixos de propósito** nesta demonstração, veja abaixo.
+- **Customer** (`/pedido`): builds an order by quantity and flavors (and drinks, if the store sells them), chooses delivery or pickup (with a scheduled time, if desired), pays with cash, card (in person) or Pix, and follows the order's progress.
+- **Store owner** (`/admin`): sees orders in real time (with a sound alert), filters them and changes their status, and configures flavors, drinks, prices, delivery fees, opening hours, Pix, name, logo and colors.
+- Light and dark themes, Brazilian Portuguese interface, works on desktop, tablet and phone.
+- Prices are always calculated on the server; the front end is never the source of truth.
 
-### Limites da demo (por segurança)
+## How to try the demo
 
-Como o painel é público, o app roda com `MODO_DEMO=true`:
+1. Open the order page and place a test order (use made-up data).
+2. Log into the panel at `/admin/login` with the test login above and follow the order.
+3. Explore the settings. Some data is **intentionally fixed** in this demo, see below.
 
-| O quê | Comportamento |
+### Demo limits (for safety)
+
+Since the panel is public, the app runs with `MODO_DEMO=true`:
+
+| What | Behavior |
 |---|---|
-| Nome do estabelecimento | Fixo em "DeliveryApp" |
-| Chave Pix, favorecido, banco e WhatsApp | Fixos e fictícios (chave `12345678900`), para ninguém cadastrar os próprios dados. O painel avisa que estão inalterados por segurança. Só o prazo do pagamento Pix é editável. |
-| Pedidos | Todos são apagados uma vez por dia (cron às 03:00 UTC, meia-noite em Brasília) para o banco não encher |
-| Demais configurações (preços, sabores, horários, cores, logo) | Editáveis por qualquer visitante |
+| Business name | Fixed as "DeliveryApp" |
+| Pix key, beneficiary, bank and WhatsApp | Fixed and fictional (key `12345678900`), so nobody registers their own data. The panel warns that they are unchanged for safety. Only the Pix payment deadline is editable. |
+| Orders | All deleted once a day (cron at 03:00 UTC, midnight in Brasília) so the database doesn't fill up |
+| Other settings (prices, flavors, hours, colors, logo) | Editable by any visitor |
 
-Não informe dados pessoais reais. Nada do que é enviado deve ser considerado privado.
+Do not enter real personal data. Nothing submitted should be considered private.
 
-## Tecnologias
+## Tech stack
 
-| Pasta | O que é | Detalhes |
+| Folder | What it is | Details |
 |---|---|---|
-| [`api/`](api/README.md) | API REST: Node.js 24, Fastify 5, TypeScript, Prisma 7, PostgreSQL (Neon), Zod, JWT | regras de negócio em [`api/APP.md`](api/APP.md) |
-| [`web/`](web/README.md) | Front: React 19, TypeScript, Vite, Tailwind CSS v4, shadcn/ui | página do cliente e painel do admin |
+| [`api/`](api/README.md) | REST API: Node.js 24, Fastify 5, TypeScript, Prisma 7, PostgreSQL (Neon), Zod, JWT | business rules in [`api/APP.md`](api/APP.md) |
+| [`web/`](web/README.md) | Front end: React 19, TypeScript, Vite, Tailwind CSS v4, shadcn/ui | customer page and admin panel |
 
-Também: testes automatizados com Vitest (API e web), GitHub Actions para rodar os testes e deploy na Vercel (dois projetos) com o banco no Neon.
+Also: automated tests with Vitest (API and web), GitHub Actions to run the tests, and deployment on Vercel (two projects) with the database on Neon.
 
-## Rodar localmente
+## Documentation
 
-Pré-requisitos: **Node.js 24** e um banco PostgreSQL.
+The full project documentation is at [deliveryapp-doc.vercel.app](https://deliveryapp-doc.vercel.app). Its source lives in [`doc/`](doc/README.md); to run it locally, use `cd doc && npm install && npm run dev`.
+
+## Running locally
+
+Prerequisites: **Node.js 24** and a PostgreSQL database.
 
 ```bash
 git clone https://github.com/evelynlacerda/deliveryapp.git
@@ -54,9 +63,9 @@ cd deliveryapp
 ```bash
 cd api
 npm install
-cp .env.example .env     # preencha DATABASE_URL, JWT_SECRET, ADMIN_USER=admin123 e ADMIN_PASSWORD=123deliveryapp!
-npm run db:deploy        # cria as tabelas
-npm run db:seed:demo     # dados fictícios, sabores, preços e o admin de teste
+cp .env.example .env     # fill in DATABASE_URL, JWT_SECRET, ADMIN_USER=admin123 and ADMIN_PASSWORD=123deliveryapp!
+npm run db:deploy        # creates the tables
+npm run db:seed:demo     # fictional data, flavors, prices and the test admin
 npm run dev              # http://localhost:3333
 ```
 
@@ -68,50 +77,52 @@ npm install
 npm run dev              # http://localhost:5173
 ```
 
-**3. Abrir**
+**3. Open**
 
-- Cliente: <http://localhost:5173/pedido>
-- Painel: <http://localhost:5173/admin/login> (o login de teste aparece na própria tela)
+- Customer: <http://localhost:5173/pedido>
+- Panel: <http://localhost:5173/admin/login> (the test login is shown on the screen itself)
 
-### Usar como app de verdade (sem as travas da demo)
+### Using it as a real app (without the demo locks)
 
-Na API, defina `MODO_DEMO=false` e rode `npm run db:seed` (em vez de `db:seed:demo`, que sobrescreve a configuração). Depois, em **Pix e contato**, cadastre WhatsApp, chave Pix, favorecido e banco; sem a chave, a opção Pix fica escondida para os clientes. Troque também `ADMIN_USER` e `ADMIN_PASSWORD` por credenciais próprias.
+In the API, set `MODO_DEMO=false` and run `npm run db:seed` (instead of `db:seed:demo`, which overwrites the configuration). Then, under **Pix e contato** (Pix and contact), register the WhatsApp number, Pix key, beneficiary and bank; without a key, the Pix option is hidden from customers. Also replace `ADMIN_USER` and `ADMIN_PASSWORD` with your own credentials.
 
-## Variáveis de ambiente da demo (API)
+## Demo environment variables (API)
 
-| Variável | Para quê |
+| Variable | Purpose |
 |---|---|
-| `MODO_DEMO` | `true` (padrão) trava nome, Pix, favorecido, banco e WhatsApp. `false` libera. |
-| `CRON_SECRET` | Segredo (mínimo 16 caracteres) que a Vercel Cron envia ao chamar `GET /cron/limpar-pedidos`. Sem ele a limpeza diária fica desligada. |
-| `ADMIN_USER`, `ADMIN_PASSWORD` | Login criado pelo seed. Na demo: `admin123` / `123deliveryapp!`. |
+| `MODO_DEMO` | `true` (default) locks name, Pix, beneficiary, bank and WhatsApp. `false` unlocks them. |
+| `CRON_SECRET` | Secret (at least 16 characters) that Vercel Cron sends when calling `GET /cron/limpar-pedidos`. Without it, the daily cleanup is disabled. |
+| `ADMIN_USER`, `ADMIN_PASSWORD` | Login created by the seed. In the demo: `admin123` / `123deliveryapp!`. |
 
-A lista completa está em [`api/README.md`](api/README.md).
+The full list is in [`api/README.md`](api/README.md).
 
-## Testes
+## Tests
 
 ```bash
-cd api && npm test      # precisa de DATABASE_TESTS_URL (banco separado) no .env
-cd web && npm test      # não precisa de nada
+cd api && npm test      # needs DATABASE_TESTS_URL (a separate database) in .env
+cd web && npm test      # needs nothing
 ```
 
-O GitHub Actions roda os dois automaticamente (`.github/workflows/`). Detalhes em cada README.
+GitHub Actions runs both automatically (`.github/workflows/`). Details are in each README.
 
-## Deploy
+## Deployment
 
-API e web são **dois projetos na Vercel** (Root Directory `api` e `web`), com o banco no Neon. As variáveis e os passos de cada projeto estão em [`api/README.md`](api/README.md) e [`web/README.md`](web/README.md); a API precisa de `WEB_URL` com a URL do front e o front de `VITE_API_URL` com a URL da API. O agendamento da limpeza diária está em `api/vercel.json`.
+API and web are **two Vercel projects** (Root Directory `api` and `web`), with the database on Neon. The variables and steps for each project are in [`api/README.md`](api/README.md) and [`web/README.md`](web/README.md); the API needs `WEB_URL` set to the front end's URL, and the front end needs `VITE_API_URL` set to the API's URL. The daily cleanup schedule is in `api/vercel.json`.
 
-Ao publicar a demo num banco que já tinha dados reais, rode uma vez `npm run db:seed:demo` na pasta `api`: ele sobrescreve configuração, contato, endereço, logo e cores com valores de exemplo e apaga os pedidos.
+When publishing the demo on a database that already had real data, run `npm run db:seed:demo` once in the `api` folder: it overwrites configuration, contact, address, logo and colors with sample values and deletes the orders.
 
-## Estrutura
+## Structure
 
 ```
 deliveryapp/
-├── .github/workflows/   testes da API e do web (GitHub Actions)
+├── .github/workflows/   API and web tests (GitHub Actions)
 ├── api/                 backend
+├── doc/                 project documentation (Vite), published on Vercel
 ├── web/                 frontend
-└── README.md            este arquivo
+├── README.md            this file (main, English)
+└── README.pt-BR.md      Portuguese (Brazil) version
 ```
 
-## Autoria
+## Author
 
-Feito por Evelyn Lacerda como projeto de portfólio. Os nomes, endereços, telefones e dados de pagamento que aparecem no app são fictícios.
+Made by Evelyn Lacerda as a portfolio project. The names, addresses, phone numbers and payment data shown in the app are fictional.

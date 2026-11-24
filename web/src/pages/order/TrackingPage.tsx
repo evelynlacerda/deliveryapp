@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { ArrowLeft, Check, CheckCircle2, Clock, Copy, MapPin, MessageCircle, MessageSquare, Store } from 'lucide-react'
+import { ArrowLeft, Check, CheckCircle2, Clock, Copy, Package, MapPin, MessageCircle, MessageSquare, Store } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
 import { ErrorState, LoadingState } from '@/components/state-views'
+import { PedidoItens } from '@/components/pedido-itens'
 import { StatusBadge } from '@/components/status-badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { useFetch } from '@/hooks/use-fetch'
 import { ApiError, api } from '@/lib/api'
-import { formatDateTime, formatQtdItem, temItemADividir, formatPrice, formatTime, paymentLabels, QUANDO_PRONTO, statusFlow, statusLabels, tipoLabels, textoTroco } from '@/lib/format'
+import { formatDateTime, formatPrice, formatTime, paymentLabels, QUANDO_PRONTO, statusFlow, statusLabels, tipoLabels, textoEndereco, textoTroco } from '@/lib/format'
 import { textoPrazoPix } from '@/lib/prazo-pix'
 import { whatsappLink } from '@/lib/whatsapp'
 import type { Pedido, Pix } from '@/types/types'
@@ -172,7 +173,7 @@ export default function TrackingPage() {
                   <dd>
                     {p.tipoEntrega === 'ENTREGA' ? (
                       <>
-                        {p.endereco}
+                        {textoEndereco(p)}
                         {p.pontoReferencia && <span className="block font-normal text-muted-foreground">Ref.: {p.pontoReferencia}</span>}
                       </>
                     ) : (
@@ -210,23 +211,8 @@ export default function TrackingPage() {
             </section>
 
             <section className="section">
-              <h2 className="section__title mb-2">Itens</h2>
-              <ul className="item-list">
-                {p.itens.map((i) => (
-                  <li key={i.sabor}>
-                    <span>{i.sabor}</span>
-                    <span>{formatQtdItem(i.quantidade)}</span>
-                  </li>
-                ))}
-              </ul>
-              {temItemADividir(p.itens) && (
-                <p className="summary__note mt-2">Você escolheu só os sabores: a gente divide as {p.quantidadeTotal} unidades entre eles.</p>
-              )}
-              <dl className="summary__rows mt-3 mb-0 border-b-0 pb-0">
-                <div className="summary__row"><dt>Subtotal ({p.quantidadeTotal} un.)</dt><dd>{formatPrice(p.subtotal)}</dd></div>
-                <div className="summary__row"><dt>Entrega</dt><dd>{parseFloat(p.taxaEntrega) === 0 ? 'Grátis' : formatPrice(p.taxaEntrega)}</dd></div>
-                <div className="summary__row summary__row--total"><dt>Total</dt><dd>{formatPrice(p.total)}</dd></div>
-              </dl>
+              <h2 className="section__title mb-2"><Package className="size-4" /> Itens</h2>
+              <PedidoItens pedido={p} notaDividir={`Você escolheu só os sabores: a gente divide as ${p.quantidadeTotal} unidades entre eles.`} />
             </section>
           </div>
         )}

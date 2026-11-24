@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FormStatus } from '@/components/form-status'
 import { ErrorState, LoadingState } from '@/components/state-views'
+import { Switch } from '@/components/switch'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,14 +10,6 @@ import { useSave } from '@/hooks/use-save'
 import { api } from '@/lib/api'
 import { NOMES_DOS_DIAS, textoHorario } from '@/lib/funcionamento'
 import type { Funcionamento, SalvarFuncionamentoBody } from '@/types/types'
-
-function Switch({ id, checked, disabled, onChange }: { id: string; checked: boolean; disabled?: boolean; onChange: (valor: boolean) => void }) {
-  return (
-    <button id={id} type="button" role="switch" aria-checked={checked} disabled={disabled} className="switch" onClick={() => onChange(!checked)}>
-      <span className="switch__thumb" />
-    </button>
-  )
-}
 
 function situacaoTexto(f: Funcionamento) {
   if (f.motivoFechado === 'FECHADO_MANUAL') return 'Fechado (você marcou "Estabelecimento fechado")'

@@ -1,19 +1,15 @@
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { criarApp, criarPedidoDireto, encerrar, obterPrisma } from "./helpers.js";
+import { criarApp, encerrar, horarioFuturo, obterPrisma } from "./helpers.js";
 
 let app: FastifyInstance;
 const codigosCriados: string[] = [];
 
-async function pedir(dados: Parameters<typeof criarPedidoDireto>[0]) {
-  const criado = await criarPedidoDireto(dados);
-  codigosCriados.push(criado.codigo);
-  const res = await app.inject({ method: "GET", url: `/pedido/${criado.codigo}` });
-  expect(res.statusCode).toBe(200);
-  return res.json();
+async function postPedido(payload: object) {
+  const res = await app.inject({ method: "POST", url: "/pedido", payload });
+  if (res.statusCode === 201) codigosCriados.push(res.json().codigo);
+  return res;
 }
-
-const emHoras = (h: number) => new Date(Date.now() + h * 3600_000);
 
 beforeAll(async () => {
   app = await criarApp();
@@ -24,20 +20,49 @@ afterAll(async () => {
   await encerrar(app);
 });
 
-describe("retirada no local", () => {
-  it("assim que estiver pronto: 30 unidades, R$ 29,00, sem frete e sem horário", async () => {
-    const pedido = await pedir({ quantidade: 30, tipoEntrega: "RETIRADA", horarioAgendado: null });
+// Cliente fictício e pedido de 10 unidades (R$ 13,00, sem taxa na retirada).
+const retirada = {
+  nomeCliente: "Maria Silva",
+  telefone: "(44) 99123-4567",
+  formaPagamento: "DINHEIRO",
+  quantidade: 10,
+  tipoEntrega: "RETIRADA",
+};
 
-    expect(pedido).toMatchObject({ tipoEntrega: "RETIRADA", quantidadeTotal: 30, subtotal: "29.00", taxaEntrega: "0.00", total: "29.00" });
-    expect(pedido.horarioAgendado).toBeNull();
-    expect(pedido).not.toHaveProperty("telefone");
+describe("retirada no local", () => {
+  it("assim que estiver pronto: sem horário agendado e sem taxa", async () => {
+    const res = await postPedido(retirada);
+
+    expect(res.statusCode).toBe(201);
+    expect(res.json()).toMatchObject({
+      status: "AGUARDANDO",
+      tipoEntrega: "RETIRADA",
+      horarioAgendado: null,
+      quantidadeTotal: 10,
+      subtotal: "13.00",
+      taxaEntrega: "0.00",
+      total: "13.00",
+      endereco: null,
+      numero: null,
+      bairro: null,
+    });
   });
 
-  it("em data posterior com horário agendado: 30 unidades, R$ 29,00 e horário gravado", async () => {
-    const horario = emHoras(30);
-    const pedido = await pedir({ quantidade: 30, tipoEntrega: "RETIRADA", horarioAgendado: horario });
+  it("em data e horário posteriores: guarda o horário agendado", async () => {
+    const horarioAgendado = horarioFuturo(72);
+    const res = await postPedido({ ...retirada, horarioAgendado });
 
-    expect(pedido).toMatchObject({ tipoEntrega: "RETIRADA", quantidadeTotal: 30, taxaEntrega: "0.00", total: "29.00" });
-    expect(new Date(pedido.horarioAgendado).getTime()).toBe(horario.getTime());
+    expect(res.statusCode).toBe(201);
+    expect(res.json()).toMatchObject({ tipoEntrega: "RETIRADA", horarioAgendado, total: "13.00" });
+  });
+
+  it("horário agendado no passado é recusado", async () => {
+    const res = await postPedido({ ...retirada, horarioAgendado: "2020-01-01T10:00:00-03:00" });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json().erros[0]).toMatchObject({
+      campo: "horarioAgendado",
+      mensagem: "O horário escolhido deve ser no futuro.",
+    });
   });
 });

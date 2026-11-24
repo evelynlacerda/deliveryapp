@@ -69,7 +69,7 @@ describe("criação de pedido", () => {
         ...dadosCliente,
         quantidade: 50,
         tipoEntrega: "ENTREGA",
-        endereco: "Rua das Flores, 123 - Centro",
+        endereco: "Rua das Flores", numero: "123", bairro: "Centro",
       },
     });
 
@@ -79,7 +79,9 @@ describe("criação de pedido", () => {
 
     expect(pedido.codigo).toMatch(CODIGO);
     expect(pedido.tipoEntrega).toBe("ENTREGA");
-    expect(pedido.endereco).toBe("Rua das Flores, 123 - Centro");
+    expect(pedido.endereco).toBe("Rua das Flores");
+    expect(pedido.numero).toBe("123");
+    expect(pedido.bairro).toBe("Centro");
     expect(pedido.quantidadeTotal).toBe(50);
     expect(pedido.subtotal).toBe("39.00");
     expect(pedido.taxaEntrega).toBe("5.00");

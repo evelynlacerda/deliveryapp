@@ -44,6 +44,18 @@ model Sabor {
     itens ItemPedido[]
 }
 
+// Bebidas à venda. A foto fica no próprio banco (limite de 300 KB), como a logo.
+model Bebida {
+  id               Int       @id @default(autoincrement())
+  nome             String    @db.VarChar(80)
+  preco            Decimal   @db.Decimal(10, 2)
+  ativo            Boolean   @default(true)
+  fotoDados        Bytes?
+  fotoTipo         String?   @db.VarChar(30)
+  fotoAtualizadaEm DateTime?
+  criadoEm         DateTime  @default(now())
+}
+
 model FaixaPreco {
     id         Int     @id @default(autoincrement())
     quantidade Int     @unique
@@ -72,6 +84,7 @@ model Configuracao {
     diasAtendimento                 Int[]        @default([0, 1, 2, 3, 4, 5, 6])
     enderecoRetirada                String?      @db.VarChar(300)
     entregaSuspensaEm               String?      @db.VarChar(10)
+    vendaBebidasAtiva               Boolean      @default(true)
     nomeMarca                       String       @default("DeliveryApp") @db.VarChar(60)
     logoDados                       Bytes?
     logoTipo                        String?      @db.VarChar(30)
@@ -89,6 +102,8 @@ model Pedido {
     telefone             String         @db.VarChar(20)
     tipoEntrega          TipoEntrega
     endereco             String?        @db.VarChar(300)
+    numero               String?        @db.VarChar(20)
+    bairro               String?        @db.VarChar(100)
     pontoReferencia      String?        @db.VarChar(200)
     observacao           String?        @db.VarChar(500)
     horarioAgendado      DateTime?
@@ -107,6 +122,7 @@ model Pedido {
     pagarAte             DateTime?
     criadoEm             DateTime       @default(now())
     itens                ItemPedido[]
+    bebidas              ItemBebida[]
 
     @@index([status, criadoEm])
 }
@@ -118,6 +134,16 @@ model ItemPedido {
     saborId    Int?
     sabor      Sabor? @relation(fields: [saborId], references: [id], onDelete: Restrict)
     quantidade Int?
+}
+
+// Bebida pedida: guarda nome e valor unitário da hora do pedido (a bebida pode ser alterada ou excluída depois).
+model ItemBebida {
+  id            Int     @id @default(autoincrement())
+  pedidoId      String  @db.Uuid
+  pedido        Pedido  @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  nome          String  @db.VarChar(80)
+  valorUnitario Decimal @db.Decimal(10, 2)
+  quantidade    Int
 }
 
 model AdminUser {

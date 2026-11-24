@@ -24,7 +24,10 @@ export function statusPermitidos(tipo: TipoEntrega, forma: FormaPagamento): Stat
 
 const TENTATIVAS_CODIGO = 5;
 
-const incluirItens = { itens: { include: { sabor: { select: { id: true, nome: true } } } } };
+const incluirItens = {
+  itens: { include: { sabor: { select: { id: true, nome: true } } } },
+  bebidas: { orderBy: { id: "asc" as const } },
+};
 
 const paraDecimal = (centavos: number) => (centavos / 100).toFixed(2);
 
@@ -64,6 +67,25 @@ export async function criarPedido(input: CriarPedidoInput) {
     },
   });
 
+  // Bebidas: a escolha é obrigatória (uma ou mais bebidas, ou lista vazia = não quer) enquanto a venda
+  // está ligada e há bebidas ativas.
+  const bebidasDisponiveis = config.vendaBebidasAtiva
+    ? await prisma.bebida.findMany({ where: { ativo: true }, select: { id: true, nome: true, preco: true } })
+    : [];
+  if (input.bebidas === undefined && bebidasDisponiveis.length > 0) {
+    throw new RegraDeNegocioError('Escolha as bebidas ou marque "Não quero bebida".');
+  }
+  const bebidasPedidas = (input.bebidas ?? []).map((item) => {
+    const bebida = bebidasDisponiveis.find((b) => b.id === item.bebidaId);
+    if (!bebida) throw new RegraDeNegocioError("Uma das bebidas escolhidas não existe ou está indisponível.");
+    return { nome: bebida.nome, valorUnitario: paraDecimal(paraCentavos(bebida.preco)), quantidade: item.quantidade };
+  });
+  const totalBebidasCentavos = bebidasPedidas.reduce(
+    (soma, b) => soma + Math.round(Number(b.valorUnitario) * 100) * b.quantidade,
+    0,
+  );
+  const totalCentavos = preco.totalCentavos + totalBebidasCentavos;
+
   // Pedido misto vira um único item sem sabor.
   const itens =
     input.sabores.length > 0
@@ -84,9 +106,9 @@ export async function criarPedido(input: CriarPedidoInput) {
 
   const precisaTroco = input.formaPagamento === FormaPagamento.DINHEIRO && input.precisaTroco;
   const trocoParaCentavos = precisaTroco && input.trocoPara ? Math.round(input.trocoPara * 100) : null;
-  if (trocoParaCentavos !== null && trocoParaCentavos <= preco.totalCentavos) {
+  if (trocoParaCentavos !== null && trocoParaCentavos <= totalCentavos) {
     throw new RegraDeNegocioError(
-      `O valor para o troco deve ser maior que o total do pedido (R$ ${paraDecimal(preco.totalCentavos).replace(".", ",")}).`,
+      `O valor para o troco deve ser maior que o total do pedido (R$ ${paraDecimal(totalCentavos).replace(".", ",")}).`,
     );
   }
 
@@ -99,6 +121,8 @@ export async function criarPedido(input: CriarPedidoInput) {
           telefone: input.telefone,
           tipoEntrega: input.tipoEntrega,
           endereco: ehEntrega ? (input.endereco ?? null) : null,
+          numero: ehEntrega ? (input.numero ?? null) : null,
+          bairro: ehEntrega ? (input.bairro ?? null) : null,
           pontoReferencia: ehEntrega ? (input.pontoReferencia ?? null) : null,
           observacao: input.observacao ?? null,
           enderecoRetirada: ehEntrega ? null : (config.enderecoRetirada ?? null),
@@ -112,7 +136,8 @@ export async function criarPedido(input: CriarPedidoInput) {
           quantidadeTotal: input.quantidade,
           subtotal: paraDecimal(preco.subtotalCentavos),
           taxaEntrega: paraDecimal(preco.taxaEntregaCentavos),
-          total: paraDecimal(preco.totalCentavos),
+          total: paraDecimal(totalCentavos),
+          bebidas: { create: bebidasPedidas },
           itens: { create: itens },
         },
         include: incluirItens,

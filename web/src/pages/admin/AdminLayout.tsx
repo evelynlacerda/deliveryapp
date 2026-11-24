@@ -4,6 +4,7 @@ import {
   CircleDollarSign,
   ExternalLink,
   Clock,
+  GlassWater,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -24,6 +25,7 @@ import { useAuth } from '@/context/auth'
 const navItems: { to: string; label: string; icon: LucideIcon }[] = [
   { to: '/admin/dashboard', label: 'Pedidos', icon: LayoutDashboard },
   { to: '/admin/sabores', label: 'Sabores', icon: Soup },
+  { to: '/admin/bebidas', label: 'Bebidas', icon: GlassWater },
   { to: '/admin/precos', label: 'Preços e entrega', icon: CircleDollarSign },
   { to: '/admin/funcionamento', label: 'Funcionamento', icon: Clock },
   { to: '/admin/pix', label: 'Pix e contato', icon: QrCode },

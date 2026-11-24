@@ -9,6 +9,7 @@ import {
 } from "fastify-type-provider-zod";
 import { env } from "./lib/env.js";
 import { registrarTratadorDeErros } from "./plugins/erros.js";
+import { registrarSwagger } from "./plugins/swagger.js";
 import { routes } from "./routes/index.js";
 
 // trustProxy: atrás da Vercel o IP real do cliente vem no x-forwarded-for (rate-limit).
@@ -33,6 +34,8 @@ export async function configurarApp(instancia: FastifyInstance) {
   });
   await app.register(rateLimit, { global: false });
   await app.register(jwt, { secret: env.JWT_SECRET, sign: { expiresIn: "12h" } });
+  // O swagger precisa ser registrado antes das rotas para enxergá-las.
+  await registrarSwagger(app);
   await app.register(routes);
 
   return app;

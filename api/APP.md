@@ -81,6 +81,7 @@ O preço é sempre calculado no servidor; o valor enviado pelo cliente é ignora
 | Retirada | Sem taxa |
 | Horário (entrega e retirada) | `horarioAgendado` opcional (data e hora com fuso, no futuro). Ausente = "para quando ficar pronto": o admin informa o tempo de preparo do pedido em `PUT /pedido/{codigo}/tempo-preparo` `{ minutos }` e a resposta traz `tempoPreparoMin` e `previsaoEm` |
 | Sabores | Três formas de enviar `sabores`: (1) vazio = pedido misto (na resposta vem um único item `{ sabor: "Misto", quantidade }`, no banco `saborId` nulo); (2) cada sabor com `quantidade`: a soma deve ser exatamente a quantidade do pedido; (3) só os sabores, **sem** `quantidade`: a loja divide as unidades e cada item vem com `quantidade: null`. Misturar itens com e sem quantidade é recusado (400). Sabor repetido é recusado |
+| Endereço de entrega | Obrigatórios na entrega: `endereco` (rua ou avenida, 5 a 300 caracteres), `numero` (até 20, aceita "S/N") e `bairro` (até 100). Texto em branco conta como não informado. Na retirada são ignorados. Pedidos antigos podem ter número e bairro dentro de `endereco` |
 | Ponto de referência | `pontoReferencia` opcional (até 200 caracteres), só vale na entrega; vazio é tratado como não informado |
 | Código do pedido | 8 caracteres (sem I, L, O, 0, 1), usado pelo cliente para consultar `GET /pedido/{codigo}` |
 

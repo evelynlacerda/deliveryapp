@@ -56,7 +56,9 @@ export async function criarPedidoDireto(dados: {
     quantidade: dados.quantidade,
     tipoEntrega: dados.tipoEntrega,
     sabores: [],
-    endereco: entrega ? "Rua das Flores, 123" : undefined,
+    endereco: entrega ? "Rua das Flores" : undefined,
+    numero: entrega ? "123" : undefined,
+    bairro: entrega ? "Centro" : undefined,
     horarioAgendado:
       dados.horarioAgendado === undefined
         ? entrega

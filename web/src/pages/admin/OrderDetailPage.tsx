@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, BadgeCheck, Clock, MapPin, MessageCircle, MessageSquare, Phone, Store, Trash2 } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, Clock, Package, MapPin, MessageCircle, MessageSquare, Phone, Store, Trash2 } from 'lucide-react'
 import { FormStatus } from '@/components/form-status'
 import { useBrand } from '@/context/brand'
 import { ErrorState, LoadingState } from '@/components/state-views'
+import { PedidoItens } from '@/components/pedido-itens'
 import { StatusBadge } from '@/components/status-badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +13,7 @@ import { useFetch } from '@/hooks/use-fetch'
 import { useSave } from '@/hooks/use-save'
 import { useStatusUpdate } from '@/hooks/use-status-update'
 import { ApiError, api } from '@/lib/api'
-import { formatDateTime, formatQtdItem, temItemADividir, formatPhone, formatPrice, formatTime, paymentLabels, QUANDO_PRONTO, statusFlow, statusLabels, tipoLabels, textoTroco } from '@/lib/format'
+import { formatDateTime, formatPhone, formatPrice, formatTime, paymentLabels, QUANDO_PRONTO, statusFlow, statusLabels, tipoLabels, textoEndereco, textoTroco } from '@/lib/format'
 import { textoPrazoPix } from '@/lib/prazo-pix'
 import { whatsappLink } from '@/lib/whatsapp'
 import type { Pedido, PedidoAdmin } from '@/types/types'
@@ -232,7 +233,7 @@ Endereço: ${enderecoRetirada}` : ''}`,
               <dd>
                 {p.tipoEntrega === 'ENTREGA' ? (
                   <>
-                    {p.endereco}
+                    {textoEndereco(p)}
                     {p.pontoReferencia && <span className="block font-normal text-muted-foreground">Ref.: {p.pontoReferencia}</span>}
                   </>
                 ) : (
@@ -267,20 +268,8 @@ Endereço: ${enderecoRetirada}` : ''}`,
         </section>
 
         <section className="section">
-          <h3 className="section__title mb-2">Itens</h3>
-          <ul className="item-list">
-            {p.itens.map((i) => (
-              <li key={i.sabor}><span>{i.sabor}</span><span>{formatQtdItem(i.quantidade)}</span></li>
-            ))}
-          </ul>
-          {temItemADividir(p.itens) && (
-            <p className="summary__note mt-2">O cliente escolheu só os sabores: divida as {p.quantidadeTotal} unidades entre eles.</p>
-          )}
-          <dl className="summary__rows mt-3 mb-0 border-b-0 pb-0">
-            <div className="summary__row"><dt>Subtotal ({p.quantidadeTotal} un.)</dt><dd>{formatPrice(p.subtotal)}</dd></div>
-            <div className="summary__row"><dt>Entrega</dt><dd>{parseFloat(p.taxaEntrega) === 0 ? 'Grátis' : formatPrice(p.taxaEntrega)}</dd></div>
-            <div className="summary__row summary__row--total"><dt>Total</dt><dd>{formatPrice(p.total)}</dd></div>
-          </dl>
+          <h3 className="section__title mb-2"><Package className="size-4" /> Itens</h3>
+          <PedidoItens pedido={p} notaDividir={`O cliente escolheu só os sabores: divida as ${p.quantidadeTotal} unidades entre eles.`} />
         </section>
       </div>
 

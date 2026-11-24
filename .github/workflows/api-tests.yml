@@ -45,6 +45,12 @@ jobs:
       - name: Checar tipos
         run: npm run typecheck
 
+      # Sem o secret, o vitest falha na preparação e mostra só "No test files found" + um TypeError confuso.
+      - name: Conferir secret do banco de testes
+        run: test -n "$DATABASE_TESTS_URL" || { echo "::error::Secret DATABASE_TESTS_URL não configurado (Settings > Secrets and variables > Actions)."; exit 1; }
+        env:
+          DATABASE_TESTS_URL: ${{ secrets.DATABASE_TESTS_URL }}
+
       # Os testes aplicam as migrations e o seed no banco de testes e recusam rodar se ele for igual ao DATABASE_URL.
       - name: Rodar testes
         run: npm test

@@ -1,19 +1,15 @@
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { criarApp, criarPedidoDireto, encerrar, obterPrisma } from "./helpers.js";
+import { criarApp, encerrar, horarioFuturo, obterPrisma } from "./helpers.js";
 
 let app: FastifyInstance;
 const codigosCriados: string[] = [];
 
-async function pedir(dados: Parameters<typeof criarPedidoDireto>[0]) {
-  const criado = await criarPedidoDireto(dados);
-  codigosCriados.push(criado.codigo);
-  const res = await app.inject({ method: "GET", url: `/pedido/${criado.codigo}` });
-  expect(res.statusCode).toBe(200);
-  return res.json();
+async function postPedido(payload: object) {
+  const res = await app.inject({ method: "POST", url: "/pedido", payload });
+  if (res.statusCode === 201) codigosCriados.push(res.json().codigo);
+  return res;
 }
-
-const emHoras = (h: number) => new Date(Date.now() + h * 3600_000);
 
 beforeAll(async () => {
   app = await criarApp();
@@ -24,26 +20,70 @@ afterAll(async () => {
   await encerrar(app);
 });
 
-describe("entrega", () => {
-  it("assim que estiver pronto: 50 unidades, R$ 39,00 + R$ 5,00 de frete, sem horário", async () => {
-    const pedido = await pedir({ quantidade: 50, tipoEntrega: "ENTREGA" });
+// Cliente fictício e pedido de 50 unidades (R$ 39,00 + R$ 5,00 de taxa de entrega).
+const entrega = {
+  nomeCliente: "João Pereira",
+  telefone: "(44) 99876-5432",
+  formaPagamento: "DINHEIRO",
+  quantidade: 50,
+  tipoEntrega: "ENTREGA",
+  endereco: "Rua das Flores",
+  numero: "123",
+  bairro: "Centro",
+};
 
-    expect(pedido).toMatchObject({
+describe("entrega", () => {
+  it("assim que estiver pronto: guarda rua, número, bairro e referência", async () => {
+    const res = await postPedido({ ...entrega, pontoReferencia: "Casa B, portão azul" });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.json()).toMatchObject({
+      status: "AGUARDANDO",
       tipoEntrega: "ENTREGA",
-      endereco: "Rua das Flores, 123",
-      quantidadeTotal: 50,
+      horarioAgendado: null,
+      endereco: "Rua das Flores",
+      numero: "123",
+      bairro: "Centro",
+      pontoReferencia: "Casa B, portão azul",
       subtotal: "39.00",
       taxaEntrega: "5.00",
       total: "44.00",
     });
-    expect(pedido.horarioAgendado).toBeNull();
+
+    const consulta = await app.inject({ method: "GET", url: `/pedido/${res.json().codigo}` });
+    expect(consulta.json()).toMatchObject({ endereco: "Rua das Flores", numero: "123", bairro: "Centro" });
   });
 
-  it("em data e horário definidos depois: 50 unidades, R$ 44,00 e horário gravado", async () => {
-    const horario = emHoras(30);
-    const pedido = await pedir({ quantidade: 50, tipoEntrega: "ENTREGA", horarioAgendado: horario });
+  it("em data e horário posteriores: guarda o horário agendado", async () => {
+    const horarioAgendado = horarioFuturo(48);
+    const res = await postPedido({ ...entrega, horarioAgendado });
 
-    expect(pedido).toMatchObject({ tipoEntrega: "ENTREGA", quantidadeTotal: 50, total: "44.00" });
-    expect(new Date(pedido.horarioAgendado).getTime()).toBe(horario.getTime());
+    expect(res.statusCode).toBe(201);
+    expect(res.json()).toMatchObject({ tipoEntrega: "ENTREGA", horarioAgendado, total: "44.00" });
+  });
+
+  it("a referência é opcional", async () => {
+    const res = await postPedido(entrega);
+
+    expect(res.statusCode).toBe(201);
+    expect(res.json().pontoReferencia).toBeNull();
+  });
+
+  it.each([
+    ["endereço", "endereco", "Informe o endereço de entrega."],
+    ["número", "numero", "Informe o número da residência."],
+    ["bairro", "bairro", "Informe o bairro."],
+  ])("sem %s: 400 apontando o campo", async (_nome, campo, mensagem) => {
+    const res = await postPedido({ ...entrega, [campo]: undefined });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json().erros).toEqual([expect.objectContaining({ campo, mensagem })]);
+  });
+
+  it("número e bairro só com espaços contam como não informados", async () => {
+    const res = await postPedido({ ...entrega, numero: "  ", bairro: "" });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json().erros.map((e: { campo: string }) => e.campo)).toEqual(["numero", "bairro"]);
   });
 });

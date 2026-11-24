@@ -1,4 +1,6 @@
 import type {
+  Bebida,
+  BebidasAdmin,
   Catalogo,
   Cores,
   Funcionamento,
@@ -14,6 +16,7 @@ import type {
   StatusPedido,
   TaxasEntrega,
   TempoPreparo,
+  TipoFoto,
   Valores,
 } from '@/types/types'
 
@@ -105,24 +108,29 @@ async function request<T>(path: string, { method = 'GET', body, auth = false, qu
 export const logoUrl = (versao: number, modo: 'claro' | 'escuro' = 'claro') =>
   `${BASE_URL}/marca/logo?${modo === 'escuro' ? 'modo=escuro&' : ''}v=${versao}`
 
+// Endereço da foto de uma bebida (a versão muda a cada foto nova, então o navegador pode guardar em cache).
+export const bebidaFotoUrl = (id: number, versao: number) => `${BASE_URL}/bebidas/${id}/foto?v=${versao}`
+
 export const api = {
   marca: () => request<Marca>('/marca'),
   sabores: () => request<Sabor[]>('/sabores'),
+  bebidas: () => request<Bebida[]>('/bebidas'),
   valores: () => request<Valores>('/valores'),
   tempoPreparo: () => request<TempoPreparo>('/tempo-preparo'),
   taxas: () => request<TaxasEntrega>('/taxa-entrega'),
   pix: () => request<Pix>('/pix'),
   funcionamento: () => request<Funcionamento>('/funcionamento'),
   async catalogo(): Promise<Catalogo> {
-    const [sabores, valores, tempo, taxas, pix, funcionamento] = await Promise.all([
+    const [sabores, bebidas, valores, tempo, taxas, pix, funcionamento] = await Promise.all([
       api.sabores(),
+      api.bebidas(),
       api.valores(),
       api.tempoPreparo(),
       api.taxas(),
       api.pix(),
       api.funcionamento(),
     ])
-    return { sabores, valores, tempo, taxas, pix, funcionamento }
+    return { sabores, bebidas, valores, tempo, taxas, pix, funcionamento }
   },
   criarPedido: (body: CriarPedidoBody) => request<Pedido>('/pedido', { method: 'POST', body }),
   buscarPedido: (codigo: string) => request<Pedido>(`/pedido/${encodeURIComponent(codigo)}`),
@@ -135,6 +143,17 @@ export const api = {
   criarSabor: (nome: string) => request<SaborAdmin>('/sabores', { method: 'POST', auth: true, body: { nome } }),
   atualizarSabor: (id: number, dados: { nome?: string; ativo?: boolean }) =>
     request<SaborAdmin>(`/sabores/${id}`, { method: 'PATCH', auth: true, body: dados }),
+  bebidasAdmin: () => request<BebidasAdmin>('/admin/bebidas', { auth: true }),
+  salvarVendaBebidas: (ativa: boolean) =>
+    request<{ vendaAtiva: boolean }>('/bebidas/venda', { method: 'PUT', auth: true, body: { ativa } }),
+  criarBebida: (body: { nome: string; preco: number }) =>
+    request<Bebida>('/bebidas', { method: 'POST', auth: true, body }),
+  atualizarBebida: (id: number, body: { nome?: string; preco?: number; ativo?: boolean }) =>
+    request<Bebida>(`/bebidas/${id}`, { method: 'PATCH', auth: true, body }),
+  excluirBebida: (id: number) => request<void>(`/bebidas/${id}`, { method: 'DELETE', auth: true }),
+  enviarFotoBebida: (id: number, tipo: TipoFoto, dados: string) =>
+    request<Bebida>(`/bebidas/${id}/foto`, { method: 'PUT', auth: true, body: { tipo, dados } }),
+  removerFotoBebida: (id: number) => request<Bebida>(`/bebidas/${id}/foto`, { method: 'DELETE', auth: true }),
   salvarValores: (body: { faixas: { quantidade: number; valor: number }[]; valorUnidadeAcimaDe100: number }) =>
     request<Valores>('/valores', { method: 'PUT', auth: true, body }),
   salvarTaxas: (body: { taxaAte49: number; taxaDe50a199: number }) =>

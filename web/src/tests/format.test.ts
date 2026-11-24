@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatPhone, intervaloDoPeriodo, formatQtdItem, hasMaxTwoDecimals, nextStatus, parseMoney, statusFlow, temItemADividir } from '@/lib/format'
+import { formatPhone, telefoneColado, intervaloDoPeriodo, formatQtdItem, hasMaxTwoDecimals, nextStatus, parseMoney, statusFlow, temItemADividir, textoEndereco, normalizarTelefone, telefoneValido } from '@/lib/format'
 import { whatsappLink } from '@/lib/whatsapp'
 
 describe('statusFlow e nextStatus', () => {
@@ -78,5 +78,64 @@ describe('intervaloDoPeriodo (filtros do painel)', () => {
   it('mês inteiro, inclusive fevereiro de ano bissexto', () => {
     expect(intervaloDoPeriodo('mes', '2026-11-15')).toEqual({ de: '2026-11-01', ate: '2026-11-30' })
     expect(intervaloDoPeriodo('mes', '2028-02-10')).toEqual({ de: '2028-02-01', ate: '2028-02-29' })
+  })
+})
+
+describe('textoEndereco', () => {
+  it('junta rua, número e bairro', () => {
+    expect(textoEndereco({ endereco: 'Rua das Flores', numero: '123', bairro: 'Centro' })).toBe('Rua das Flores, 123 - Centro')
+  })
+
+  it('pedidos antigos (sem número e bairro) mostram só o endereço', () => {
+    expect(textoEndereco({ endereco: 'Rua das Flores, 123 - Centro', numero: null, bairro: null })).toBe('Rua das Flores, 123 - Centro')
+  })
+})
+
+describe('telefone', () => {
+  it('remove o DDI 55 só quando o número veio completo', () => {
+    expect(normalizarTelefone('+55 (44) 99123-4567')).toBe('44991234567')
+    expect(normalizarTelefone('5544991234567')).toBe('44991234567')
+    expect(normalizarTelefone('(55) 99123-4567')).toBe('55991234567') // DDD 55 de verdade
+  })
+
+  it('remove o +55 colado, com ou sem máscara, e mesmo antes de o número estar completo', () => {
+    expect(normalizarTelefone('+55 44 91234-5678')).toBe('44912345678')
+    expect(normalizarTelefone('+5544912345678')).toBe('44912345678')
+    expect(normalizarTelefone('  +55 (44) 91234-5678')).toBe('44912345678')
+    expect(normalizarTelefone('+55')).toBe('')
+  })
+
+  it('mantém o DDD 55 (RS) enquanto digita, mesmo com dígitos a mais', () => {
+    expect(normalizarTelefone('55912345678')).toBe('55912345678')
+    expect(normalizarTelefone('559123456789')).toBe('559123456789') // o campo corta em 11 depois
+    expect(formatPhone('559123456789')).toBe('(55) 91234-5678')
+  })
+
+  it('telefoneColado tira o +55/55 e acrescenta o 9 que faltou depois do DDD', () => {
+    expect(telefoneColado('+55 44 91234-5678')).toBe('44912345678')
+    expect(telefoneColado('+55 44 1234-5678')).toBe('44912345678') // sem o 9
+    expect(telefoneColado('554412345678')).toBe('44912345678') // 55 sem "+", sem o 9
+    expect(telefoneColado('4412345678')).toBe('44912345678')
+    expect(telefoneColado('55912345678')).toBe('55912345678') // DDD 55 de verdade
+    expect(telefoneColado('+55 55 91234-5678')).toBe('55912345678')
+    expect(telefoneColado('(44) 3123-4567')).toBe('4431234567') // fixo: não mexe
+  })
+
+  it('formatPhone mostra o número colado com +55 sem o DDI', () => {
+    expect(formatPhone('+55 44 91234-5678')).toBe('(44) 91234-5678')
+    expect(formatPhone('+5544912345678')).toBe('(44) 91234-5678')
+  })
+
+  it('formatPhone formata o número colado com DDI', () => {
+    expect(formatPhone('5544991234567')).toBe('(44) 99123-4567')
+  })
+
+  it('aceita só celular com DDD e 9 na frente', () => {
+    expect(telefoneValido('(44) 99123-4567')).toBe(true)
+    expect(telefoneValido('+55 44 99123-4567')).toBe(true)
+    expect(telefoneValido('(44) 3123-4567')).toBe(false)
+    expect(telefoneValido('(44) 89123-4567')).toBe(false)
+    expect(telefoneValido('99123-4567')).toBe(false)
+    expect(telefoneValido('(04) 99123-4567')).toBe(false)
   })
 })
