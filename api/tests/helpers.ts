@@ -33,7 +33,9 @@ export async function autenticar(app: FastifyInstance) {
   return { authorization: `Bearer ${res.json().token}` };
 }
 
-/** 
+export const horarioFuturo = (horas = 2) => new Date(Date.now() + horas * 3600_000).toISOString();
+
+/**
  * Cria o pedido pelo service (sem HTTP) para não gastar o rate-limit do POST /pedido.
  * */
 export async function criarPedidoDireto(dados: {
